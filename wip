@@ -1,0 +1,75 @@
+positionx: 450
+positiony: 120
+axisX: 450
+axisY: 120
+--------------------------
+positionx: 220
+positiony: 17
+axisX: 1157
+axisY: 234
+
+
+
+axisX: 1826
+axisY: 318
+-------------------
+
+Edit Table
+Add Field
+Manage Fields
+Remove Table
+
+-----------------
+Add Table:
+ - Table Name
+ - Description
+ - Supported Methods
+ - Traits
+ - requiresAuth
+ - Pagination
+ - Rules
+ 
+Edit Table:
+ - Search
+ - primaryKey
+ - identifier
+ - auth
+ - jwt_expires
+ - jwt_duration
+ 
+ 
+Add Field:
+ - Field Name  		input
+ - Description 		textarea
+ - Type 			select-- no file --no 
+ - Size				input (number)-- no file -- no password
+ 
+ - foreign			checkbox-- no file**
+	 - reference		select
+	 - foreignKey		select***Disabled (no choice)
+ 
+ - autoIncrement 	checkbox-- no file -- no password -- no unique
+	- increment 		input (number)
+ - id				checkbox**
+ - uuid				checkbox**
+ - null				checkbox-- no file -- no password -- no unique
+	- default			input 
+ - login			checkbox-- no file = automatically unique
+ - password			checkbox-- no file -- no foreign
+ - unique			checkbox-- no file -- no password
+ - regex 			chips-- no file -- no foreign
+	- message
+ - file				checkbox
+	 - fileTypes		checkboxes
+	 - fileExtensions	chips
+	 - fileMinSize		input (number)
+	 - fileMaxSize		input (number)
+---------
+ID UUID IDENTIFIER
+id:
+	- id unsigned int not null auto increment primary key (automatically added)
+	- uuid auto generated primary key
+	- identifier:
+		- id: id
+		- uuid: uuid
+		- other field
