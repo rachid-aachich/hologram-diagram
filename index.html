@@ -26,7 +26,7 @@
             </div>
             <div class="arrow"></div>
         </div>
-        <div class="popup" id="new_field">
+        <div class="popup" id="new_field" data-name="">
             <div class="popup-container" id="fields">
             </div>
         </div>
@@ -309,6 +309,7 @@
                     function followTable(selected) {
                         let x = (selected.transformMatrix.e + selected.size.width + 15) - $("#mydiv").scrollLeft();
                         let y = (selected.transformMatrix.f + 0) - $("#mydiv").scrollTop();
+                        $(".dropdown").attr('data-name', selected.tableOptions.name);
                         $(".dropdown").css('left', x);
                         $(".dropdown").css('top', y);
                         $(".dropdown").show();
@@ -498,11 +499,21 @@
                     });
                     
                     $("#fields").fields();
-                    $("#fields").onAddField = function(field) {
-                        console.log("field added: " + field);
-                    };
+                    $("#fields").onFieldSave(function(field) {
+                        console.log(field);
+                        let tableName = $(this).parent().attr('data-name');
+                        consol
+                        diagram.tables.map(function(table) {
+                            if(table.name == tableName)
+                                table.addField(field);
+                            return table;
+                        });
+                        console.log(diagram.tables);
+                    });
                     
                     $("#add_field").click(function() {
+                        let tableName = $(this).parent().parent().parent().attr('data-name');
+                        $("#new_field").attr('data-name', tableName);
                         $("#new_field").show();
                     });
                     
