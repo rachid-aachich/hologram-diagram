@@ -3,12 +3,12 @@
 	var callback = null;
 	
     $.fn.fields = function() {
-		let html = `<form style="padding-bottom: 5px;">
+		let html = `<form style="padding-bottom: 5px;" id="form">
 						<input type="hidden" id="new_field_table" />
 						<h4>Add New Field</h4>
 						<div class="form-group">
-						  <input id="fieldName" type="text" required="required"/>
-						  <label for="input" class="control-label">Field Name</label>
+						  <input class="validate" id="fieldName" type="text" required="required"/>
+						  <label for="input" data-error="Please enter your first name." class="control-label invalid">Field Name</label>
 						</div>
 						<div class="form-group">
 						  <textarea id="fieldDesc" onfocus="this.placeholder = 'Field description that will be used in your API Documentation'" onblur="this.placeholder = ''"></textarea>
@@ -155,7 +155,8 @@
 							</section>
 						</div>
 						<div class="form-group" style="text-align: center; margin-top: 0px;">
-							<a class="waves-effect waves-light btn-large" id="save_field">Add Field</a>
+							<div class="error" id="form_error"></div>
+							<a class="waves-effect waves-light btn-large" id="save_field" type="submit">Add Field</a>
 						</div>
 					</form>`
 		let dataTypes = {'TINYINT': null,'SMALLINT': null,'MEDIUMINT': null,'INT': null,'BIGINT': null,'DECIMAL': null,'FLOAT': null,'DOUBLE': null,'BIT': null,'CHAR': null,'VARCHAR': null,'BINARY': null,'VARBINARY': null,'TINYBLOB': null,'BLOB': null,'MEDIUMBLOB': null,'LONGBLOB': null,'TINYTEXT': null,'TEXT': null,'MEDIUMTEXT': null,'LONGTEXT': null,'ENUM': null,'SET': null,'DATE': null,'TIME': null,'DATETIME': null,'TIMESTAMP': null,'YEAR': null,'GEOMETRY': null,'POINT': null,'LINESTRING': null,'POLYGON': null,'GEOMETRYCOLLECTION': null,'MULTILINESTRING': null,'MULTIPOINT': null,'MULTIPOLYGON': null,'JSON': null};
@@ -270,18 +271,46 @@
 			$("#regex_error_message").val(message);
 			$("#regex_text").val(regex);
 		});
-		let instance = this;
 		$("#save_field").click(function() {
-			let field = getField();
-			$.fn.callback(field);
+			if(validate()) {
+				let field = getField();
+				$.fn.callback(field);
+			}
 		});
+		function validate() {
+			if(!$("#fieldName").hasClass('valid')) {
+				$.fn.error("Field name is required", "fieldName");
+				return false;
+			}
+			return true;
+		}
 		function getField() {
-			return {"name": "field", "type": "string"};
+			let name = $("#fieldName").val();
+			let type = null;
+			if($("#is_file").is(":checked"))
+				type = "File";
+			else if($("#is_password").is(":checked"))
+				type = "Password";
+			else
+				type = $("#data_type_autocomplete").val();
+
+			return {"name": name, "type": type};
 		}
         return this;
     };
 	
 	$.fn.onFieldSave = function(mycallback) {
 		$.fn.callback = mycallback
+	}
+
+	$.fn.error = function(error, input_id = false) {
+		if(input_id)
+			$("#" + input_id).addClass('invalid');
+		$("#form_error").html(error);
+		$("#form_error").show();
+	}
+
+	$.fn.reset = function() {
+
 	}
 }( jQuery ));

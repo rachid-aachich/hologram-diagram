@@ -265,7 +265,7 @@
                     
                     //newTable.changeName("fff");
                     tables[0].addField({"name": "dddd", "type": "gr"});
-                    
+
                     const relation1 = new DBDiagram.Relation(diagram, {
                         primaryTable: tables[0],
                         foreignTable: tables[1],
@@ -281,21 +281,23 @@
                         relationType: true,
                         straightLine: true
                     });
+
                     
                     tables[1].onPointerUp = function() {
                         //e.preventDefault();
                         //alert('jio');
                     };
 
+                   /* 
+                    Need to rethink this, probably the best way to do it is by an SVG element
                     tables.forEach(table => {
                         let settingXPosition = table.size.width - 20;
                         postionedSettingIcon = settingIcon.replace('{xposition}', settingXPosition);
                         let el = $('<g class="wrapped">' + table.ne.innerHTML + '</g>');
                         el.append(postionedSettingIcon);
                         table.ne.innerHTML = el.html();
-                    });
+                    });*/
                     
-                                
                     function unselectAllTables(tables) {
                         if (tables) {
                             tables.forEach(function (table) {
@@ -314,7 +316,7 @@
                         $(".dropdown").css('top', y);
                         $(".dropdown").show();
                     }
-                    
+
                     diagram.onTableSelected = function(selected) {
                         if (this.tables) {
                             this.tables.forEach(function (table) {
@@ -500,15 +502,32 @@
                     
                     $("#fields").fields();
                     $("#fields").onFieldSave(function(field) {
-                        console.log(field);
-                        let tableName = $(this).parent().attr('data-name');
-                        consol
-                        diagram.tables.map(function(table) {
+                        let tableName = $("#fields").parent().attr('data-name');
+                       /* tables.forEach(function (table, index) {
                             if(table.name == tableName)
-                                table.addField(field);
+                                tables[index].addField(field);
+                        });*/
+                        diagram.tables.map(function(table) {
+                            if(table.name == tableName) {
+                                console.log(table);
+                                let error = false;
+                                table.fieldsUi.forEach(function(f) {
+                                    console.log(f.fieldOptions.name);
+                                    console.log(field.name);
+                                    if(field.name == f.fieldOptions.name) {
+                                        $("#fields").error("Field name already used in this table", "fieldName");
+                                        error = true;
+                                        return false;
+                                    }
+                                });
+                                if(!error) {
+                                    table.addField(field);
+                                    $("#fields").reset();
+                                    $("#fields").parent().hide();
+                                }
+                            }
                             return table;
                         });
-                        console.log(diagram.tables);
                     });
                     
                     $("#add_field").click(function() {
