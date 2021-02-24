@@ -1,18 +1,21 @@
 <html>
     <head>
-    <link rel="stylesheet" type="text/css" href="resources/styles/style-dark.css">
-    <link rel="stylesheet" type="text/css" href="resources/styles/main.css">
-    <link href="resources/styles/material-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="resources/styles/materialize.css">
-    <script src="resources/jquery-3.5.1.min.js"></script>
-    <script src="db-diagram.js"></script>
-    <script src="fields.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
-    <script src="resources/jquery.contextMenu.min.js"></script>
-    <script src="resources/materialize.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="resources/styles/style-dark.css">
+        <link rel="stylesheet" type="text/css" href="resources/styles/main.css">
+        <link href="resources/styles/material-icons.css" rel="stylesheet">
+        <link rel="stylesheet" href="resources/styles/materialize.css">
+        <link href="https://unpkg.com/regex-colorize/themes/default.css" rel="stylesheet">
+        <script src="resources/jquery-3.5.1.min.js"></script>
+        <script src="db-diagram.js"></script>
+        <script src="fields.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+        <script src="resources/jquery.contextMenu.min.js"></script>
+        <script src="resources/materialize.min.js"></script>
+        <script src="//unpkg.com/regex-colorize"></script>
     </head>
     <body>
         <div id="mydiv" style="width: 100%; height:100%; overflow: scroll"></div>
+        <code class="regex">/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/</code>
         <div class="dropdown">
             <div class="menu-content">
             <ul>
@@ -509,11 +512,8 @@
                         });*/
                         diagram.tables.map(function(table) {
                             if(table.name == tableName) {
-                                console.log(table);
                                 let error = false;
                                 table.fieldsUi.forEach(function(f) {
-                                    console.log(f.fieldOptions.name);
-                                    console.log(field.name);
                                     if(field.name == f.fieldOptions.name) {
                                         $("#fields").error("Field name already used in this table", "fieldName");
                                         error = true;

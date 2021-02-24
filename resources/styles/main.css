@@ -674,3 +674,32 @@ summary::-webkit-details-marker {
   background-color: #FFCCBA;
   background-image: url('https://i.imgur.com/GnyDvKN.png');
 }
+
+.regex {
+  font-size: 17px;
+  border: .1px solid #900;
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  left:0px;
+  top:102px;
+  width:-webkit-fill-available;
+  height:27px;
+  display: inline-block;
+  outline: 0px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.regex br {
+  display:none;
+}
+
+.regex * {
+  display:inline;
+  white-space:nowrap;
+}
+
+body {
+  overflow: hidden;
+}

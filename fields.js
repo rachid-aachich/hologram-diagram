@@ -40,8 +40,8 @@
 							</div>
 							<div class="form-group" id="data_type_autocomplete_form">
 								<div class="input-field col s12">
-									<input type="text" id="data_type_autocomplete" class="autocomplete">
-									<label>Field Type</label>
+									<input type="text" id="data_type_autocomplete" class="autocomplete validate" required="required">
+									<label for="input" data-error="Please enter your first name." class="control-label invalid">Field Type</label>
 								</div>
 								<div class="input-field col s12">
 									<input type="text" id="field_size">
@@ -92,9 +92,11 @@
 									<summary class="control-label title-label">Add validation with Regex:</summary>
 										<div class="form-group">
 											<div class="input-field col s12">
+												<div id="regex_label" class="regex" style="display: none; font-size: 17px; padding-top: 11px; padding-bottom: 7px;">/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/</div>
 												<input type="text" placholder="/Regex/" id="regex_text">
-												<label>Regex String</label>
+												<label for="code" style="top: -9px;" id="regex_label">Regex String</label>
 											</div>
+											
 											<div class="input-field col s12">
 												<input type="text" placholder="Error message" id="regex_error_message">
 												<label>Message</label>
@@ -161,6 +163,8 @@
 					</form>`
 		let dataTypes = {'TINYINT': null,'SMALLINT': null,'MEDIUMINT': null,'INT': null,'BIGINT': null,'DECIMAL': null,'FLOAT': null,'DOUBLE': null,'BIT': null,'CHAR': null,'VARCHAR': null,'BINARY': null,'VARBINARY': null,'TINYBLOB': null,'BLOB': null,'MEDIUMBLOB': null,'LONGBLOB': null,'TINYTEXT': null,'TEXT': null,'MEDIUMTEXT': null,'LONGTEXT': null,'ENUM': null,'SET': null,'DATE': null,'TIME': null,'DATETIME': null,'TIMESTAMP': null,'YEAR': null,'GEOMETRY': null,'POINT': null,'LINESTRING': null,'POLYGON': null,'GEOMETRYCOLLECTION': null,'MULTILINESTRING': null,'MULTIPOINT': null,'MULTIPOLYGON': null,'JSON': null};
         this.html(html);
+		var RegexColorize = window.RegexColorize.default;
+		var rgx = new RegexColorize(); 
 		$("#data_type_autocomplete").autocomplete({
 		  data: dataTypes,
 		});
@@ -189,6 +193,9 @@
 				$("#is_unique").prop('disabled', true);
 				$("#is_null").prop('disabled', true);
 				$("#data_type_autocomplete_form").show();
+				$("#unique").show();
+				$("#null").show();
+				$("#increment").show();
 			} else {
 				$("#is_unique").parent().removeClass('disabled-checkbox');
 				$("#is_null").parent().removeClass('disabled-checkbox');
@@ -232,6 +239,9 @@
 		
 		$("#addRegex").click(function(e) {
 			e.preventDefault();
+			if(isEmpty($("#regex_error_message").val()))
+				return false;
+			
 			let tag = $("#regex_error_message").val().substring(0, 15);
 			let chip = `<div class="chip regex-chip" data-regex="" data-message="">
 							` + tag + `
@@ -264,24 +274,75 @@
 			$(".regex-chips").append(chipElem.get(0).outerHTML);
 			$("#regex_error_message").val("");
 			$("#regex_text").val("");
+			$(".regex").text("");
 		});
+
 		$(".regex-chips").on('click', ".regex-chip", function() {
 			let regex = $(this).attr('data-regex');
 			let message = $(this).attr('data-message');
 			$("#regex_error_message").val(message);
 			$("#regex_text").val(regex);
 		});
+
 		$("#save_field").click(function() {
 			if(validate()) {
 				let field = getField();
 				$.fn.callback(field);
 			}
 		});
+
+		function colorizeRegex() {
+			let regex_text = $("#regex_text");
+			let regex = $(".regex");
+			if(!isEmpty(regex_text.val())) {
+				regex_text.hide();
+				regex.text(regex_text.val());
+				regex.show();
+				rgx.colorizeAll();
+			}
+		}
+
+		$("#fields").click(function(e) {
+			let isChild = $(".regex").find(e.target).length;
+			if(!$(e.target).is('#regex_text') && isChild == 0)
+				colorizeRegex();
+			if($(e.target).is('.regex') || isChild == 1) {
+				$(".regex").hide();
+				$("#regex_text").show();
+			}
+		});
+
+		$("#regex_text").on('focusout blur', function() {
+			colorizeRegex();
+		});
+
+		$("#regex_text").keypress(function(e) {
+			if(e.keyCode == 13)
+				e.preventDefault();
+			let content = $("#regex_text").val();
+			if(!isEmpty(content))
+				$('.regex').text(content.replace(/\n|\r/g, ""));
+		});
+
+		$('.regex').bind('DOMSubtreeModified', function(e) {
+			//console.log('changed');
+		});
+
+		function isEmpty(value){
+			return (value == null || value.length === 0 || value === '');
+		}
+
 		function validate() {
 			if(!$("#fieldName").hasClass('valid')) {
 				$.fn.error("Field name is required", "fieldName");
 				return false;
 			}
+			if(isEmpty(getField().type))
+			{
+				$.fn.error("Field type is required", "data_type_autocomplete");
+				return false;
+			}
+
 			return true;
 		}
 		function getField() {
@@ -296,6 +357,7 @@
 
 			return {"name": name, "type": type};
 		}
+		rgx.colorizeAll();
         return this;
     };
 	
