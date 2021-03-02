@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
          
-         module.exports = {"foriegnKeyIcon":"foriegnKeyIcon","many":"many","one":"one","primaryKeyIcon":"primaryKeyIcon","tableIcon":"tableIcon","uniqueKeyIcon":"uniqueKeyIcon"}
+         module.exports = {"foriegnKeyIcon":"foriegnKeyIcon","many":"many","one":"one","primaryKeyIcon":"primaryKeyIcon","tableIcon":"tableIcon","uniqueKeyIcon":"uniqueKeyIcon","passwordIcon":"passwordIcon"}
       
 
 /***/ }),
@@ -608,7 +608,6 @@ var Diagram = /** @class */ (function (_super) {
      * @param evt Pointer move event.
      */
     Diagram.prototype.onDragMove = function (_) {
-		console.log('drag moving');
        /* if (this.diagramHolder.transform.baseVal.numberOfItems === 0) {
             var transform = this.rootSvg.createSVGTransformFromMatrix(this.transformMatrix);
             this.diagramHolder.transform.baseVal.appendItem(transform);
@@ -1182,9 +1181,10 @@ var Relation = /** @class */ (function (_super) {
                 throw e;
             }
         }
-		//console.log(_this);
+
         _this.foriegnField = options.foreignField;
-        _this.options.foreignTable.addField(options.foreignField);
+        if(!options.foreignFieldExists)
+            _this.options.foreignTable.addField(options.foreignField);
         _this.options.primaryTable.primaryRelation(_this);
         _this.options.foreignTable.foriegnRelation(_this, _this.foriegnField);
         _this.path = base_1.Base.createElement("path");
@@ -1193,10 +1193,23 @@ var Relation = /** @class */ (function (_super) {
             clazz += " " + styles.weak;
         }
         _this.native.appendChild(attributes_1.applyAttribute(_this.path, { class: clazz }));
-        _this.many = elements_1.Visualization.createReferencePathIcon(icons.many);
-        _this.pone = elements_1.Visualization.createReferencePathIcon(icons.one);
-        _this.native.appendChild(attributes_1.applyAttribute(_this.many, { class: styles.many }));
-        _this.native.appendChild(attributes_1.applyAttribute(_this.pone, { class: styles.one }));
+        if(options.type == "manytomany") {
+            _this.many = elements_1.Visualization.createReferencePathIcon(icons.many);
+            _this.smany = elements_1.Visualization.createReferencePathIcon(icons.many);
+            _this.native.appendChild(attributes_1.applyAttribute(_this.many, { class: styles.many }));
+            _this.native.appendChild(attributes_1.applyAttribute(_this.smany, { class: styles.many }));
+        } else if(options.type == 'onetoone') {
+            _this.many = elements_1.Visualization.createReferencePathIcon(icons.one);
+            _this.pone = elements_1.Visualization.createReferencePathIcon(icons.one);
+            _this.native.appendChild(attributes_1.applyAttribute(_this.many, { class: styles.one }));
+            _this.native.appendChild(attributes_1.applyAttribute(_this.pone, { class: styles.one }));
+        } else {
+            _this.many = elements_1.Visualization.createReferencePathIcon(icons.many);
+            _this.pone = elements_1.Visualization.createReferencePathIcon(icons.one);
+            _this.native.appendChild(attributes_1.applyAttribute(_this.many, { class: styles.many }));
+            _this.native.appendChild(attributes_1.applyAttribute(_this.pone, { class: styles.one }));
+        }
+
         _this.options.foreignTable.front();
         _this.options.primaryTable.front();
         _this.render().attach(parent);
@@ -1239,13 +1252,22 @@ var Relation = /** @class */ (function (_super) {
             if (Math.abs(r1 - l2) < Math.abs(r2 - l1)) {
                 p1 = pL.right;
                 p2 = fL.left;
-                attributes_1.applyAttribute(this.pone, { transform: "translate(" + p1.x + ", " + (p1.y - oneMidY) + ")" });
+                if(this.options.type == "manytomany")
+                    attributes_1.applyAttribute(this.smany, { transform: "translate(" + p1.x + ", " + (p1.y - oneMidY) + ") rotate(180, 5, 4)" });
+                else
+                    attributes_1.applyAttribute(this.pone, { transform: "translate(" + p1.x + ", " + (p1.y - oneMidY) + ")" });
                 attributes_1.applyAttribute(this.many, { transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY) + ")" });
             }
             else {
                 p1 = fL.right;
                 p2 = pL.left;
-                attributes_1.applyAttribute(this.pone, { transform: "translate(" + (p2.x - oneSize.width) + ", " + (p2.y - oneMidY) + ")" });
+                if(this.options.type == "manytomany") {
+                    attributes_1.applyAttribute(this.smany, {
+                        transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY) + ")",
+                    });
+                } else {
+                    attributes_1.applyAttribute(this.pone, { transform: "translate(" + (p2.x - oneSize.width) + ", " + (p2.y - oneMidY) + ")" });
+                }
                 attributes_1.applyAttribute(this.many, {
                     transform: "translate(" + p1.x + ", " + (p1.y - manyMidY) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")",
                 });
@@ -1600,7 +1622,6 @@ var Table = /** @class */ (function (_super) {
         var visual = parent.visualization;
         var icons = visual.getIconsDts();
         var styles = visual.getStylesDts();
-		console.log(styles.tableIcon);
         _this.wrapped = _this.native.appendChild(base_1.Base.createElement("g"));
         attributes_1.applyAttribute(_this.wrapped, { class: "wrapped" });
         var size = parent.preference.table.minimumSize;
@@ -1686,13 +1707,31 @@ var Table = /** @class */ (function (_super) {
                 y: half,
             }),
         };
-        if (options.primary || options.unique || options.foreign) {
+        options.password = options.type.toLowerCase() == "password";
+        options.file = options.type.toLowerCase() == "file";
+        if (options.primary || options.unique || options.foreign || options.password || options.login || options.file) {
             var size = void 0;
             var clazz = void 0;
             if (options.primary) {
                 fieldUi.icon = elements_1.Visualization.createReferencePathIcon(icons.primaryKeyIcon);
                 size = visual.getIconsElementSize(icons.primaryKeyIcon);
                 clazz = styles.primary;
+            }
+            else if(options.file) {
+                let fileIcon = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="21px" height="21px" x="7px" y="4px" viewBox="0 0 32 32" version="1.1"><g transform="translate(0 -1028.4)"><path d="m5 1030.4c-1.1046 0-2 0.9-2 2v8 4 6c0 1.1 0.8954 2 2 2h14c1.105 0 2-0.9 2-2v-6-4-4l-6-6h-10z" fill="#95a5a6"/><path d="m5 1029.4c-1.1046 0-2 0.9-2 2v8 4 6c0 1.1 0.8954 2 2 2h14c1.105 0 2-0.9 2-2v-6-4-4l-6-6h-10z" fill="#bdc3c7"/><path d="m21 1035.4-6-6v4c0 1.1 0.895 2 2 2h4z" fill="#95a5a6"/><g fill="#3498db"><rect height="1" width="6" y="1038.4" x="12"/><path d="m5 1034.4 1.4688 5h1.0312l1.0312-3.5 1.0313 3.5h1.0315l1.468-5h-1l-0.968 3.2-0.969-3.2h-1.1562l-0.9688 3.2-0.9688-3.2h-1.0312z"/><rect height="1" width="12" y="1041.4" x="6"/><rect height="1" width="12" y="1044.4" x="6"/><rect height="1" width="12" y="1047.4" x="6"/></g></g></svg>';
+                var parser = new DOMParser();
+				var element = parser.parseFromString(fileIcon, "image/svg+xml");
+                fieldUi.icon = element.documentElement;
+                size = {"width": 16, "height": 16};
+                clazz = "fileIcon";
+            }
+            else if(options.login) {
+                let loginIcon = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16px" height="16px" x="7px" y="4px" viewBox="0 0 16 16" version="1.1"><path d="M12,9H8H4c-2.209,0-4,1.791-4,4v3h16v-3C16,10.791,14.209,9,12,9z"/><path d="M12,5V4c0-2.209-1.791-4-4-4S4,1.791,4,4v1c0,2.209,1.791,4,4,4S12,7.209,12,5z"/></svg>';
+                var parser = new DOMParser();
+				var element = parser.parseFromString(loginIcon, "image/svg+xml");
+                fieldUi.icon = element.documentElement;
+                size = {"width": 16, "height": 16};
+                clazz = "loginIcon";
             }
             else if (options.unique) {
                 fieldUi.icon = elements_1.Visualization.createReferencePathIcon(icons.uniqueKeyIcon);
@@ -1703,6 +1742,14 @@ var Table = /** @class */ (function (_super) {
                 fieldUi.icon = elements_1.Visualization.createReferencePathIcon(icons.foriegnKeyIcon);
                 size = visual.getIconsElementSize(icons.foriegnKeyIcon);
                 clazz = styles.foreign;
+            }
+            else if(options.password) {
+                let passwordIcon = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16px" height="16px" x="7px" y="4px" viewBox="0 0 32 32" version="1.1"><g><path d="M19.1,14L17,14.7v-2.3c0-0.6-0.4-1-1-1s-1,0.4-1,1v2.3L12.9,14c-0.5-0.2-1.1,0.1-1.3,0.6c-0.2,0.5,0.1,1.1,0.6,1.3l2.1,0.7   l-1.3,1.8c-0.3,0.4-0.2,1.1,0.2,1.4c0.2,0.1,0.4,0.2,0.6,0.2c0.3,0,0.6-0.1,0.8-0.4l1.3-1.8l1.3,1.8c0.2,0.3,0.5,0.4,0.8,0.4   c0.2,0,0.4-0.1,0.6-0.2c0.4-0.3,0.5-0.9,0.2-1.4l-1.3-1.8l2.1-0.7c0.5-0.2,0.8-0.7,0.6-1.3C20.2,14.1,19.7,13.8,19.1,14z"/><path d="M8.1,14L6,14.7v-2.3c0-0.6-0.4-1-1-1s-1,0.4-1,1v2.3L1.9,14c-0.5-0.2-1.1,0.1-1.3,0.6c-0.2,0.5,0.1,1.1,0.6,1.3l2.1,0.7   l-1.3,1.8c-0.3,0.4-0.2,1.1,0.2,1.4C2.5,19.9,2.7,20,2.9,20c0.3,0,0.6-0.1,0.8-0.4L5,17.8l1.3,1.8C6.5,19.9,6.8,20,7.1,20   c0.2,0,0.4-0.1,0.6-0.2c0.4-0.3,0.5-0.9,0.2-1.4l-1.3-1.8l2.1-0.7c0.5-0.2,0.8-0.7,0.6-1.3C9.2,14.1,8.7,13.8,8.1,14z"/><path d="M31.4,14.6c-0.2-0.5-0.7-0.8-1.3-0.6L28,14.7v-2.3c0-0.6-0.4-1-1-1s-1,0.4-1,1v2.3L23.9,14c-0.5-0.2-1.1,0.1-1.3,0.6   c-0.2,0.5,0.1,1.1,0.6,1.3l2.1,0.7l-1.3,1.8c-0.3,0.4-0.2,1.1,0.2,1.4c0.2,0.1,0.4,0.2,0.6,0.2c0.3,0,0.6-0.1,0.8-0.4l1.3-1.8   l1.3,1.8c0.2,0.3,0.5,0.4,0.8,0.4c0.2,0,0.4-0.1,0.6-0.2c0.4-0.3,0.5-0.9,0.2-1.4l-1.3-1.8l2.1-0.7C31.3,15.7,31.6,15.2,31.4,14.6z   "/></g></svg>';
+				var parser = new DOMParser();
+				var element = parser.parseFromString(passwordIcon, "image/svg+xml");
+                fieldUi.icon = element.documentElement;
+                size = {"width": 16, "height": 16};
+                clazz = "passwordIcon";
             }
             else {
                 throw new Error("expected error");
@@ -1840,7 +1887,7 @@ var Table = /** @class */ (function (_super) {
         try {
             for (var _b = __values(this.fieldsUi), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var fieldUI = _c.value;
-                if (fieldUI.fieldOptions.foreign && fieldUI.fieldOptions === field) {
+                if (/*fieldUI.fieldOptions.foreign &&*/ fieldUI.fieldOptions === field) {
                     if (!fieldUI.relation) {
                         fieldUI.relation = [];
                     }
@@ -2003,6 +2050,7 @@ var Table = /** @class */ (function (_super) {
      */
     Table.prototype.onPositionChange = function (p) {
         this.fieldsUi.forEach(function (item) {
+            console.log(item);
             if (item.relation && item.relation.length > 0) {
                 item.relation.forEach(function (relation) {
                     relation.render();
@@ -3011,7 +3059,6 @@ var Preference = /** @class */ (function () {
         get: function () {
             if (window.localStorage) {
                 var rawDiagramSetting = window.localStorage.getItem(Preference.tableSettingKey);
-				console.log(Preference.tableSettingKey);
                 if (!rawDiagramSetting) {
                     return defaults_1.defaultTableSetting(this.visualization);
                 }
@@ -3093,6 +3140,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var strings_1 = __webpack_require__(/*! @db-diagram/@extensions/strings */ "./src/@extensions/strings.ts");
 var icons_1 = __importDefault(__webpack_require__(/*! @db-diagram/assets/icons */ "../../../../../../../private/var/folders/db/2f7l1zlx1r94k73gsw8sz04h0000gn/T/@krobkrong/db-diagram/resources-utilities/cache/resources/icons/icons.d.js"));
+icons_1.default.passwordIcon = "passwordIcon";
 var style_dark_scss_1 = __importDefault(__webpack_require__(/*! @db-diagram/assets/styles/style-dark.scss */ "../../../../../../../private/var/folders/db/2f7l1zlx1r94k73gsw8sz04h0000gn/T/@krobkrong/db-diagram/resources-utilities/cache/resources/styles/style-dark.scss.js"));
 var base_1 = __webpack_require__(/*! @db-diagram/elements/base */ "./src/elements/base.ts");
 var attributes_1 = __webpack_require__(/*! @db-diagram/elements/utils/attributes */ "./src/elements/utils/attributes.ts");
@@ -3292,6 +3340,7 @@ var Visualization = /** @class */ (function () {
         this.fieldIconWidth = this.iconsSize.get(icons_1.default.foriegnKeyIcon).editable()
             .extend(this.iconsSize.get(icons_1.default.uniqueKeyIcon), true)
             .extend(this.iconsSize.get(icons_1.default.primaryKeyIcon), true)
+           // .extend(this.iconsSize.get(icons_1.default.passwordIcon), true)
             .padding(Visualization.TableTextPadding, true).width;
     };
     /**
@@ -3388,6 +3437,7 @@ var Visualization = /** @class */ (function () {
         opts.foreign = false;
         opts.unique = true;
         size.extend(this.getIconsElementSize(icons_1.default.uniqueKeyIcon), true);
+      //  size.extend(this.getIconsElementSize(icons_1.default.passwordIcon), true);
         return size.padding(Visualization.TableFieldPadding, true);
     };
     /**

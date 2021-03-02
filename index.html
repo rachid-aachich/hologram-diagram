@@ -8,6 +8,7 @@
         <script src="resources/jquery-3.5.1.min.js"></script>
         <script src="db-diagram.js"></script>
         <script src="fields.js"></script>
+        <script src="tables.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
         <script src="resources/jquery.contextMenu.min.js"></script>
         <script src="resources/materialize.min.js"></script>
@@ -19,7 +20,7 @@
         <div class="dropdown">
             <div class="menu-content">
             <ul>
-                <li><i class="material-icons menu-icon">edit</i> <span>Edit Table</<span></li>
+                <li id="edit_table"><i class="material-icons menu-icon">edit</i> <span>Edit Table</<span></li>
                 <li id="add_field"><i class="material-icons menu-icon">add</i> Add Field</li>
                 <li><i class="material-icons menu-icon">settings</i> Manage Fields</li>
                 <li><i class="material-icons menu-icon">insert_link</i> Manage Relations</li>
@@ -33,171 +34,15 @@
             <div class="popup-container" id="fields">
             </div>
         </div>
-        <div class="popup" id="new_table">
-            <div class="popup-container">
-                <form>
-                    <input type="hidden" id="xposition" />
-                    <input type="hidden" id="yposition" />
-                    <h4>Create New Table (Entity)</h4>
-                    <div class="form-group">
-                        <input id="tableName" type="text" required="required"/>
-                        <label for="input" class="control-label">Table Name</label>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="tableDesc" onfocus="this.placeholder = 'Table description that will be used in your API Documentation'" onblur="this.placeholder = ''"></textarea>
-                        <label for="textarea" class="control-label">Description</label><i class="bar"></i>
-                    </div>
-                    <i class="bar"></i>
-
-
-                    <details class="feature">
-                            <summary class="control-label title-label">Select HTTP Methods to support in this Table:</summary>
-                            <div class="row">
-                                <div class="checkbox" style="grid-area: first;">
-                                    <label>
-                                    <input type="checkbox" checked="checked"/><i class="helper"></i>GET
-                                    </label>
-                                </div>
-                                <div class="checkbox" style="grid-area: second;">
-                                    <label>
-                                    <input type="checkbox" checked="checked"/><i class="helper"></i>POST
-                                    </label>
-                                </div>
-                                <div class="checkbox" style="grid-area: third;">
-                                    <label>
-                                    <input type="checkbox" checked="checked"/><i class="helper"></i>PUT
-                                    </label>
-                                </div>
-                                <div class="checkbox" style="grid-area: forth;">
-                                    <label>
-                                    <input type="checkbox" checked="checked"/><i class="helper"></i>DELETE
-                                    </label>
-                                </div>
-                            </div>
-                    </details>
-                    
-                    <details class="feature">
-                        <summary class="control-label title-label">Select Table Traits:</summary>
-                        <div class="row">
-                            <div class="checkbox" style="grid-area: first;">
-                                <label>
-                                <input type="checkbox" checked="checked"/><i class="helper"></i>Uuid
-                                </label>
-                            </div>
-                            <div class="checkbox" style="grid-area: second;">
-                                <label>
-                                <input type="checkbox"/><i class="helper"></i>Blameable
-                                </label>
-                            </div>
-                            <div class="checkbox" style="grid-area: third;">
-                                <label>
-                                <input type="checkbox"/><i class="helper"></i>Timestampable
-                                </label>
-                            </div>
-                            <div class="checkbox" style="grid-area: forth;">
-                                <label>
-                                <input type="checkbox"/><i class="helper"></i>Softdeletable
-                                </label>
-                            </div>
-                        </div>
-                    </details>
-                    
-                    <details class="feature">
-                        <summary class="control-label title-label">Other Options:</summary>
-                        <div class="row">
-                            <div class="checkbox" style="grid-area: first;">
-                                <label>
-                                <input type="checkbox" checked="checked"/><i class="helper"></i>Pagination
-                                </label>
-                            </div>
-                            <div class="checkbox" style="grid-area: second;">
-                                <label>
-                                <input id="requiresAuth" type="checkbox"/><i class="helper"></i>Require Authentication
-                                </label>
-                            </div>
-                        </div>
-                    </details>
-                    
-                    <div class="feature" style="background: beige; display: none; padding-left: 15px;" id="requiresAuthOptions">
-                        <div class="row-3">
-                            <div class="form-group grid-first">
-                                <div class="input-field col s12">
-                                    <select id="authReqMethod">
-                                        <option value="get" selected>GET</option>
-                                        <option value="post" selected>POST</option>
-                                        <option value="put" selected>PUT</option>
-                                        <option value="delete" selected>DELETE</option>
-                                    </select>
-                                    <label>Method</label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group grid-second">
-                                <div class="input-field col s12">
-                                    <select id="authReqEntity">
-                                        <option value="users" selected>Users</option>
-                                    </select>
-                                    <label>Auth Entity</label>
-                                </div>
-                            </div>
-                            <div class="form-group grid-third" style="margin-top: 57px;">
-                                <button id="addAuthReq" class="btn waves-effect waves-light" type="submit" name="action">Add
-                                    <i class="material-icons right">add_box</i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="chips" class="chips-placeholder chips"></div>
-
-                    </div>
-                    
-                    <div class="feature" style="padding-left: 15px; padding-right: 15px;">
-                        <div class="row">
-                            <div class="form-group grid-first" style="padding-right: 10px;">
-                                <div class="input-field col s12">
-                                    <input id="leftValue" type="text"/>
-                                    <label>Left Value</label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group grid-second">
-                                <div class="input-field col s12">
-                                    <select id="operator">
-                                        <option value="==" selected>==</option>
-                                        <option value="!=">!=</option>
-                                        <option value="===">===</option>
-                                        <option value="!==">!==</option>
-                                        <option value="<"><</option>
-                                        <option value=">">></option>
-                                        <option value="<="><=</option>
-                                        <option value=">">></option>
-                                        <option value=">">></option>
-                                    </select>
-                                    <label>Operator</label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group grid-third" style="padding-left: 10px; padding-right: 10px;">
-                                <div class="input-field col s12">
-                                    <input id="rightValue" type="text"/>
-                                    <label>Right Value</label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group grid-forth" style="margin-top: 57px;">
-                                <button id="addRule" class="btn waves-effect waves-light" type="submit" name="action">Add
-                                    <i class="material-icons right">add_box</i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="rule_chips" class="chips-placeholder chips"></div>
-                    </div>
-                </form>
-                <div class="button-container">
-                    <button id="addTable" type="button" class="button"><span>Add Table</span></button>
-                </div>
+        <div class="popup" id="table">
+            <div class="popup-container" id="tableEditor">
+                
             </div>
         </div>
         <script>
+            let data = `{"id":1,"name":"API Name","application":"Application ID","owner":"Account Name","version":"v1.5","level":2,"environment":"prod","security":"REST Api Security Type","description":"Description of the API","meta":{"createdAt":"datetime","lastUpdatedAt":"datetime","createdBy":"Creator","lastUpdatedBy":"Updater"},"rest":true,"graphql":false,"tables":[{"name":"test","description":"Tests of students","meta":{"createdAt":"datetime","lastUpdatedAt":"datetime","createdBy":"Creator","lastUpdatedBy":"Updater","positionX":50,"positionY":85,"color":"color of the table"},"methods":["GET","POST","DELETE","PUT","HEAD","PATCH","OPTIONS"],"requiresAuth":[{"method":"GET","authEntity":"users"},{"method":"POST","authEntity":"users"},{"method":"PUT","authEntity":"users"}],"pagination":true,"columns":[{"name":"id","type":"int","size":"","foreign":false,"reference":null,"foreignKey":null,"autoIncrement":true,"id":true,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":true},{"name":"score","type":"int","size":"","foreign":false,"reference":null,"foreignKey":null,"autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":true},{"name":"student","type":"int","size":"","foreign":true,"reference":"student","foreignKey":"id","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false},{"name":"paper","type":"text","size":"","foreign":false,"reference":"","foreignKey":"","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false,"file":true,"fileTypes":["document","image"],"fileExtensions":["txt","jpeg","jpg","pdf"],"fileMinSize":2000,"fileMaxSize":5000000}],"primaryKey":"id","identifier":"id","auth":false,"jwt_expires":false,"jwt_duration":0,"traits":["uuid","blameable","timestampable","softdeletable"],"search":{"fulltext":[],"soundex":[],"exact":[],"like":[]},"rules":[{"method":"GET","leftValue":"resource.score","rightValue":15,"operator":">"}]},{"name":"student","description":"Description of the table","meta":{"createdAt":"datetime","lastUpdatedAt":"datetime","createdBy":"Creator","lastUpdatedBy":"Updater","positionX":160,"positionY":340,"color":"color of the table"},"methods":["GET","POST","DELETE","PUT","HEAD","PATCH","OPTIONS"],"pagination":true,"columns":[{"name":"id","type":"int","size":"","foreign":false,"reference":null,"foreignKey":null,"autoIncrement":true,"id":true,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":true},{"name":"name","type":"varchar","size":100,"foreign":false,"reference":null,"foreignKey":null,"autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false},{"name":"family","type":"int","size":"","foreign":true,"reference":"family","foreignKey":"id","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false}],"primaryKey":"id","identifier":"id","auth":false,"traits":["uuid","blameable","timestampable","softdeletable"],"search":{"fulltext":["brand"],"soundex":["brand"],"exact":[],"like":["brand"],"levenshtein":["brand"]},"rules":[{"method":"GET","leftValue":"test[score>15].student[name='karam'].parent[type='father'].name","rightValue":"\\"rachid aachich\\"","operator":"contains"}]},{"name":"family","description":"Description of the table","meta":{"createdAt":"datetime","lastUpdatedAt":"datetime","createdBy":"Creator","lastUpdatedBy":"Updater","positionX":450,"positionY":220,"color":"color of the table"},"methods":["GET","POST","DELETE","PUT","HEAD","PATCH","OPTIONS"],"pagination":true,"columns":[{"name":"id","type":"int","size":"","foreign":false,"reference":null,"foreignKey":null,"autoIncrement":true,"id":true,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":true},{"name":"name","type":"varchar","size":100,"foreign":false,"reference":null,"foreignKey":null,"autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false}],"primaryKey":"id","identifier":"id","auth":false,"traits":["uuid","blameable","timestampable","softdeletable"],"search":{"fulltext":["brand"],"soundex":["brand"],"exact":[],"like":["brand"],"levenshtein":["brand"]},"rules":[{"method":"GET","rulestring":"The rule string, logical condition that shall return true in order to proceed in action"}]},{"name":"parent","description":"Description of the table","meta":{"createdAt":"datetime","lastUpdatedAt":"datetime","createdBy":"Creator","lastUpdatedBy":"Updater","positionX":800,"positionY":500,"color":"color of the table"},"methods":["GET","POST","DELETE","PUT","HEAD","PATCH","OPTIONS"],"pagination":true,"columns":[{"name":"id","type":"int","size":"","foreign":false,"reference":null,"foreignKey":null,"autoIncrement":true,"id":true,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":true},{"name":"name","type":"varchar","size":100,"foreign":false,"reference":null,"foreignKey":null,"autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false},{"name":"type","type":"varchar","size":50,"foreign":false,"reference":"","foreignKey":"","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false},{"name":"family","type":"int","size":"","foreign":true,"reference":"family","foreignKey":"id","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":false}],"primaryKey":"id","identifier":"id","auth":false,"traits":["uuid","blameable","timestampable","softdeletable"],"search":{"fulltext":["brand"],"soundex":["brand"],"exact":[],"like":["brand"],"levenshtein":["brand"]},"rules":[{"method":"GET","rulestring":"The rule string, logical condition that shall return true in order to proceed in action"}]},{"name":"users","description":"User login table","meta":{"createdAt":"datetime","lastUpdatedAt":"datetime","createdBy":"Creator","lastUpdatedBy":"Updater","positionX":1024,"positionY":730,"color":"color of the table"},"methods":["GET","POST","DELETE","PUT","HEAD","PATCH","OPTIONS"],"pagination":false,"columns":[{"name":"id","type":"int","size":"","foreign":false,"reference":null,"foreignKey":null,"autoIncrement":true,"id":true,"uuid":false,"default":null,"null":false,"login":false,"password":false,"unique":true},{"name":"username","type":"varchar","size":100,"foreign":false,"reference":null,"foreignKey":null,"autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":true,"password":false,"unique":true},{"name":"password","type":"varchar","size":50,"foreign":false,"reference":"","foreignKey":"","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":false,"password":true,"unique":false},{"name":"email","type":"varchar","size":100,"foreign":false,"reference":"","foreignKey":"","autoIncrement":false,"id":false,"uuid":false,"default":null,"null":false,"login":true,"password":false,"unique":true}],"primaryKey":"id","identifier":"id","auth":true,"requirePassOnUpdate":true,"jwt_expires":true,"jwt_duration":30,"traits":["uuid","blameable","timestampable","softdeletable"],"search":{"fulltext":["username","email"],"soundex":["username"],"exact":["username","email"],"like":["username"]},"rules":[{"method":"GET","leftValue":"currentuser.type","rightValue":"\\"admin\\"","operator":"=="},{"method":"GET","leftValue":"resource.id","rightValue":"currentuser.id","operator":"=="}]}],"relations":[{"original":"test","foreign":"student","primaryKey":"id","foreignKey":"student","type":"OneToOne"},{"original":"student","foreign":"parent","primaryKey":"","foreignKey":"","middletable":"student_parents","type":"ManyToMany"},{"original":"parent","foreign":"family","primaryKey":"id","foreignKey":"family","type":"ManyToOne"}]}`;
+           // data = data.replace("\"", "\\\"");
+            window.api = JSON.parse(data);
             $(document).ready(function() {
                 $('select').formSelect();
                 DBDiagram.onDomReady(async () => {
@@ -208,40 +53,66 @@
                         if (response.ok) return response.json();
                         // handle error here  #61acec
                     });*/
-                    let data = [
+                    var tables = [];
+                    window.api.tables.forEach(function(tbl) {
+                        /*let fields = [];
+                        tbl.columns.forEach(function(column) {
+                            fields.push({"name": })
+                        });*/
+                        let tbOpt = {"name": tbl.name};
+                        /*const fields = tbl.columns.map(function(c) {
+                            if(c.name == tbl.identifier)
+                                c.primary = true;
+                            return c;
+                        });*/
+                       // delete tbOpt.fields;
+                        tbOpt.size = {width: 250, height: 153};
+                        const table = diagram.table(tbOpt);
+                        table.x(tbl.meta.positionX).y(tbl.meta.positionY);
+                        tbl.columns.forEach((field) => {
+                            if(field.name == tbl.identifier)
+                                field.primary = true;
+                            if(field.password)
+                                field.type = "Password";
+                            if(field.file)
+                                field.type = "File";
+                            table.addField(field);
+                        });
+                        tables.push(table);
+                    });
+                    /*let data = [
                         {
-                        "name": "table 1",
-                        "header": {"tableIcon": "lock", "color": "#010072"},
-                        "allowDrag": false,
-                        "fields": [
-                            {"name": "id", "type": "number", "primary": true},
-                            {"name": "name", "type": "string"},
-                            {"name": "email", "type": "string"}
-                        ],
-                        "size" : {"width": "250", "height": "153"}
+                            "name": "table 1",
+                            "header": {"tableIcon": "lock", "color": "#010072"},
+                            "fields": [
+                                {"name": "id", "type": "number", "primary": true},
+                                {"name": "name", "type": "string"},
+                                {"name": "email", "type": "string"},
+                                {"name": "pass", "type": "password"}
+                            ],
+                            //"size" : {"width": "250", "height": "153"}
                         },
                         {
-                        "name": "table 2",
-                        "header": {"tableIcon": "lock"},
-                        "table-icon": "lock",
-                        "fields": [
-                            {"name": "id", "type": "number", "primary": true, "nameColor": "red"},
-                            {"name": "name", "type": "string"},
-                            {"name": "email", "type": "string"}
-                        ]
+                            "name": "table 2",
+                            "table-icon": "lock",
+                            "fields": [
+                                {"name": "id", "type": "number", "primary": true, "nameColor": "red"},
+                                {"name": "name", "type": "string"},
+                                {"name": "email", "type": "string"}
+                            ]
                         },
                         {
-                        "name": "table 3",
-                        "header": {"tableIcon": "lock"},
-                        "fields": [
-                            {"name": "id", "type": "number", "primary": true},
-                            {"name": "name", "type": "string"},
-                            {"name": "email", "type": "string"}
-                        ]
+                            "name": "table 3",
+                            "header": {"tableIcon": "lock"},
+                            "fields": [
+                                {"name": "id", "type": "number", "primary": true},
+                                {"name": "name", "type": "string"},
+                                {"name": "email", "type": "string"}
+                            ]
                         }
                     ];
                     var tables = [];
-                    let settingIcon = '<svg class="table-settings-icon" onclick="alert(8787)" fill="#eaeaea" transform="translate(104,5)" width="20" height="20" version="1.1" id="Capa_1" x="{xposition}px" y="7px" viewBox="0 0 384 384" style="enable-background:new 0 0 384 384;" xml:space="preserve"><g>	<g>		<circle cx="192" cy="42.667" r="42.667"/>	</g></g><g>	<g>		<circle cx="192" cy="192" r="42.667"/>	</g></g><g>	<g>		<circle cx="192" cy="341.333" r="42.667"/>	</g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>';
+                    //let settingIcon = '<svg class="table-settings-icon" onclick="alert(8787)" fill="#eaeaea" transform="translate(104,5)" width="20" height="20" version="1.1" id="Capa_1" x="{xposition}px" y="7px" viewBox="0 0 384 384" style="enable-background:new 0 0 384 384;" xml:space="preserve"><g>	<g>		<circle cx="192" cy="42.667" r="42.667"/>	</g></g><g>	<g>		<circle cx="192" cy="192" r="42.667"/>	</g></g><g>	<g>		<circle cx="192" cy="341.333" r="42.667"/>	</g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>';
                     data.forEach(tbOpt => {
                         const fields = tbOpt.fields;
                         delete tbOpt.fields;
@@ -249,12 +120,12 @@
                         const table = diagram.table(tbOpt);
                         fields.forEach((field) => { table.addField(field) });
                         tables.push(table);
-                    });
+                    });*/
                 
                 
-                    tables[0].x(100).y(50);
+                    /*tables[0].x(100).y(50);
                     tables[1].x(450).y(120);
-                    tables[2].x(150).y(320);
+                    tables[2].x(150).y(320);*/
                     //tables[0].ne.outerHTML = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="width: 300px; height: 250px"><rect x="50" y="20" rx="10" ry="10" width="200" height="200" style="fill:red; stroke:black; stroke-width:3" id="rect" data-name="table 1" /></svg>';
                         //console.log(tables[0].ne.innerHTML);
                     
@@ -265,25 +136,58 @@
                         cover.css('left', pointer.x);
                         cover.css('top', pointer.y);
                     };*/
-                    
-                    //newTable.changeName("fff");
-                    tables[0].addField({"name": "dddd", "type": "gr"});
 
-                    const relation1 = new DBDiagram.Relation(diagram, {
+                    //newTable.changeName("fff");
+                   // tables[0].addField({"name": "dddd", "type": "file"});
+
+                    window.api.relations.forEach(function(relation) {
+                        
+                        let originTable = tables.find(function(table) {
+                            return table.name == relation.original;
+                        });
+                        let foreignTable = tables.find(function(table) {
+                            return table.name == relation.foreign;
+                        });
+
+
+                        let primaryKey = foreignTable.fieldsUi.find(function(field) {
+                            return field.fieldOptions.name == relation.primaryKey;
+                        });
+                        let foreignKey = originTable.fieldsUi.find(function(field) {
+                            return relation.type == 'ManyToMany' ? field.fieldOptions.primary == true : (field.fieldOptions.name == relation.foreignKey);
+                        });
+                        
+                        new DBDiagram.Relation(diagram, {
+                            primaryTable: foreignTable,
+                            foreignField: foreignKey.fieldOptions,
+                            foreignTable: originTable,
+                            foreignFieldExists: true,
+                            type: relation.type.toLowerCase(),
+                            line: true,
+                            weak: relation.type == 'ManyToMany'
+                        });
+                    });
+
+                    let fieldIndex = tables[1].fieldIndex({"name":"family","type":"int","foreign":true,"unique":false,"typeRaw":"int"});
+                    //console.log(fieldIndex);
+
+                  /*  const relation1 = new DBDiagram.Relation(diagram, {
                         primaryTable: tables[0],
+                        foreignField: tables[1].field(2),
                         foreignTable: tables[1],
+                        foreignFieldExists: true,
                         line: true,
                         weak: false
                     });
                     const relation2 = new DBDiagram.Relation(diagram, {
                         primaryTable: tables[2],
-                        foreignField: {foreign: true, name: "email", type: "number", typeRaw: "number"},
+                       // foreignField: {foreign: true, name: "email", type: "number", typeRaw: "number"},
                         foreignTable: tables[1],
                         line: false,
                         weak: true,
                         relationType: true,
                         straightLine: true
-                    });
+                    });*/
 
                     
                     tables[1].onPointerUp = function() {
@@ -340,6 +244,7 @@
                     tables.forEach(function (table) {
                         table.onPositionChange = function(p) {
                             this.fieldsUi.forEach(function (item) {
+                                console.log(item);
                                 if (item.relation && item.relation.length > 0) {
                                     item.relation.forEach(function (relation) {
                                         relation.render();
@@ -377,8 +282,8 @@
                                 currentMousePos.x = event.pageX;
                                 currentMousePos.y = event.pageY;
                             });
-                            console.log(key);
-                            $("#new_table").show();
+                            $("#tableEditor").tableEditor();
+                            $("#table").show();
                         },
                         items: {
                             "new": {name: "New Table", icon: "edit"},
@@ -389,7 +294,6 @@
                         e.preventDefault();
                         $("#xposition").val(e.pageX);
                         $("#yposition").val(e.pageY);
-                        console.log(e.pageX + " " + e.pageY);
                     });
                     
                     
@@ -419,24 +323,6 @@
                         $(window).scrollTop($(window).scrollTop() + (clickY - e.pageY));
                     }
                     
-                    $("#requiresAuth").change(function() {
-                        if(this.checked) {
-                            $("#requiresAuthOptions").show();
-                        } else {
-                            $("#requiresAuthOptions").hide();
-                        }
-                    });
-                    
-                    $('#chips').chips(
-                        {
-                            onChipAdd: function() { $("#chips").show(); },
-                            onChipDelete: function() {
-                                if($("#chips").children().length <= 1)
-                                    $("#chips").hide();
-                            }
-                        }
-                    );
-                    
                     $('#rule_chips').chips(
                         {
                             onChipAdd: function() { $("#rule_chips").show(); },
@@ -447,75 +333,29 @@
                         }
                     );
                     
-                    $("#chips").find("input").prop( "disabled", true );
                     $("#rule_chips").find("input").prop( "disabled", true );
-                    
-                    $("#authReqMethod").change(function() {
-                        $(this).formSelect();
-                    });
-                    
-                    $("#authReqEntity").change(function() {
-                        $(this).formSelect();
-                    });
-                    
-                    $("#operator").change(function() {
-                        $(this).formSelect();
-                    });
-                    
-                    $("#addAuthReq").click(function(e) {
-                        e.preventDefault();
-                        let authReqMethod = $('#authReqMethod').formSelect('getSelectedValues');
-                        let authReqEntity = $("#authReqEntity").formSelect('getSelectedValues');
-                        $('#chips').chips('addChip', {tag: 'Method:' + authReqMethod + ' - Auth:' + authReqEntity, image: ''});
-                    });
-                    
-                    $("#addRule").click(function(e) {
-                        e.preventDefault();
-                        let operator = $('#operator').formSelect('getSelectedValues');
-                        let leftValue = $("#leftValue").val();
-                        let rightValue = $("#rightValue").val();
-                        if(!leftValue || !rightValue)
-                            return false;
-                        $("#rule_chips").chips('addChip', {tag: leftValue + ' ' + operator + ' ' + rightValue, image: ''});
-                    });
-                    
-                    $("#addTable").click(function(e) {
-                        e.preventDefault();
-                        let xposition = $("#xposition").val();
-                        let yposition = $("#yposition").val();
-                        let tableName = $("#tableName").val();
-                        let tbOpt = {
-                            "name": tableName,
-                            "header": {"tableIcon": "lock", "color": "#010072"},
-                            "allowDrag": false,
-                            "fields": [
-                                {"name": "id", "type": "number", "primary": true},
-                                {"name": "name", "type": "string"},
-                                {"name": "email", "type": "string"}
-                            ],
-                            "size" : {"width": "250", "height": "153"}
-                        };
-                        const fields = tbOpt.fields;
-                        delete tbOpt.fields;
-                        const table = diagram.table(tbOpt);
-                        console.log(diagram.tables);
-                        fields.forEach((field) => { table.addField(field) });
-                        table.x(xposition).y(yposition);
-                    });
-                    
+
                     $("#fields").fields();
                     $("#fields").onFieldSave(function(field) {
                         let tableName = $("#fields").parent().attr('data-name');
-                       /* tables.forEach(function (table, index) {
-                            if(table.name == tableName)
-                                tables[index].addField(field);
-                        });*/
                         diagram.tables.map(function(table) {
                             if(table.name == tableName) {
                                 let error = false;
                                 table.fieldsUi.forEach(function(f) {
                                     if(field.name == f.fieldOptions.name) {
                                         $("#fields").error("Field name already used in this table", "fieldName");
+                                        error = true;
+                                        return false;
+                                    }
+
+                                    if(field.type == "Password" && f.fieldOptions.type == "Password") {
+                                        $("#fields").error("A Password field already exists", "is_password");
+                                        error = true;
+                                        return false;
+                                    }
+
+                                    if(field.login && f.fieldOptions.login) {
+                                        $("#fields").error("A Login field already exists", "is_login");
                                         error = true;
                                         return false;
                                     }
@@ -534,6 +374,13 @@
                         let tableName = $(this).parent().parent().parent().attr('data-name');
                         $("#new_field").attr('data-name', tableName);
                         $("#new_field").show();
+                    });
+
+                    $("#edit_table").click(function() {
+                        let tableName = $(this).parent().parent().parent().attr('data-name');
+                        $("#table").attr('data-name', tableName);
+                        $("#tableEditor").tableEditor();
+                        $("#table").show();
                     });
                     
                     /*tables[1].onPointerUp = function(pointer) {

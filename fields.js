@@ -1,7 +1,5 @@
 (function ( $ ) {
- 
-	var callback = null;
-	
+ 	
     $.fn.fields = function() {
 		let html = `<form style="padding-bottom: 5px;" id="form">
 						<input type="hidden" id="new_field_table" />
@@ -115,6 +113,19 @@
 						<div id="file_control" style="display: none;">
 							<section>
 								<details class="feature" open>
+									<summary class="control-label title-label">File Size:</summary>
+									<div class="row-2" style="padding-left: 0px;">
+										<div class="input-field" style="padding-right: 10px;">
+											<input class="custom-class" type="number" placeholder="File Min Size" id="file_min_size">
+										</div>
+										<div class="input-field" style="padding-left: 10px;">
+											<input class="custom-class" type="number" placeholder="File Max Size" id="file_max_size">
+										</div>
+									</div>
+								</details>
+							</section>
+							<section>
+								<details class="feature">
 									<summary class="control-label title-label">File Type:</summary>
 									<div class="row-5">
 										<div class="checkbox grid-first" style="padding-right: 0px;">
@@ -146,7 +157,7 @@
 								</details>
 							</section>
 							<section>
-								<details class="feature" open>
+								<details class="feature">
 									<summary class="control-label title-label">Allowed File Extensions:</summary>
 									<div>
 										<div class="chips input-field" id="file_extension_chips">
@@ -165,15 +176,18 @@
         this.html(html);
 		var RegexColorize = window.RegexColorize.default;
 		var rgx = new RegexColorize(); 
+
 		$("#data_type_autocomplete").autocomplete({
 		  data: dataTypes,
 		});
+
 		$("#file_extension_chips").chips({placeholder: 'Enter extension', secondaryPlaceholder: 'Enter extension',});
 		$("#file_extension_chips").show();
 		$("#file_extension_input").keypress(function(e){
 			if(e.keyCode == 32)
 				e.preventDefault();
 		});
+
 		$("#is_file").change(function() {
 			if(this.checked) {
 				$("#no_file").hide();
@@ -183,6 +197,7 @@
 				$("#file_control").hide();
 			}
 		});
+
 		$("#is_login").change(function() {
 			if(this.checked) {
 				$("#is_password").prop('checked', false);
@@ -192,6 +207,7 @@
 				$("#is_null").parent().addClass('disabled-checkbox');
 				$("#is_unique").prop('disabled', true);
 				$("#is_null").prop('disabled', true);
+				$("#default_value").prop('disabled', true);
 				$("#data_type_autocomplete_form").show();
 				$("#unique").show();
 				$("#null").show();
@@ -201,8 +217,16 @@
 				$("#is_null").parent().removeClass('disabled-checkbox');
 				$("#is_unique").prop('disabled', false);
 				$("#is_null").prop('disabled', false);
+				$("#default_value").prop('disabled', false);
 			}
 		});
+
+		$("#is_unique").change(function() {
+			if(this.checked) {
+			} else {
+			}
+		});
+
 		$("#is_password").change(function() {
 			if(this.checked) {
 				$("#is_login").prop('checked', false);
@@ -217,6 +241,7 @@
 				$("#increment").show();
 			}
 		});
+
 		$("#is_null").change(function() {
 			if(this.checked) {
 				$("#default_value").prop('disabled', true);//parent().css('visibility', 'hidden');
@@ -226,6 +251,7 @@
 				$("#default_value").prop('disabled', false);//parent().css('visibility', 'visible');
 			}
 		});
+
 		$("#is_autoincrement").change(function() {
 			if(this.checked) {
 				$("#increment_by").prop('disabled', false);
@@ -348,6 +374,8 @@
 		function getField() {
 			let name = $("#fieldName").val();
 			let type = null;
+			let size = $("#field_size").val();
+
 			if($("#is_file").is(":checked"))
 				type = "File";
 			else if($("#is_password").is(":checked"))
@@ -355,7 +383,76 @@
 			else
 				type = $("#data_type_autocomplete").val();
 
-			return {"name": name, "type": type};
+			let is_file = type == 'File';
+			let is_password = type == "Password";
+			let is_login = is_file ? false : $("#is_login").is(":checked");
+			let is_unique = is_password || is_file ? false : $("#is_unique").is(":checked");
+			let is_autoincrement = is_password || is_file ? false : $("#is_autoincrement").is(":checked");
+			let increment_by = is_autoincrement ? $("#increment_by").val() : null;
+			let is_null = is_password ? false : $("#is_null").is(":checked");
+			let default_value = is_null ? null : $("#default_value").val();
+			let fileMinSize = is_file ? $("#file_min_size").val() : null;
+			let fileMaxSize = is_file ? $("#file_max_size").val() : null;
+			let validation = [];
+			let fileTypes = [];
+			let fileExtensions = [];
+
+			$(".regex-chips").children('.chip').each(function() {
+				let regex = $(this).attr('data-regex');
+				let message = $(this).attr('data-message');
+				validation.push({"regex": regex, "message": message});
+			});
+
+			if($("#document_type").is(":checked"))
+				fileTypes.push("document");
+			if($("#video_type").is(":checked"))
+				fileTypes.push("video");
+			if($("#image_type").is(":checked"))
+				fileTypes.push("image");
+			if($("#audio_type").is(":checked"))
+				fileTypes.push("audio");
+			if($("#other_type").is(":checked"))
+				fileTypes.push("other");
+
+			if($("#file_extension_chips").children(".chip").length > 0) {
+				let chips = $("#file_extension_chips").chips('selectChip');
+
+				chips.get(0).M_Chips.chipsData.forEach(function(chip) {
+					let ext = chip.tag;
+					fileExtensions.push(ext);
+				});
+			}
+
+			let realType = type;
+			if(is_file)
+				realType = "text";
+			else if(is_password)
+				realType = "varchar";
+
+			let column = {
+				"name": name,
+				"type": realType,
+				"size": size,
+				"foreign": false,
+				"reference": null,
+				"foreignKey": null,
+				"autoIncrement": is_autoincrement,
+				"incrementBy": increment_by,
+				"id": false,
+				"uuid": false,
+				"default": default_value,
+				"null": is_null,
+				"login": is_login,
+				"password": is_password,
+				"unique": is_unique,
+				"validation": validation,
+				"fileMinSize": fileMinSize,
+				"fileMaxSize": fileMaxSize,
+				"fileTypes": fileTypes,
+				"fileExtensions": fileExtensions
+			}
+
+			return {"name": name, "type": type, "login": is_login, "unique": is_unique, "column": column};
 		}
 		rgx.colorizeAll();
         return this;
@@ -373,6 +470,14 @@
 	}
 
 	$.fn.reset = function() {
-
+		$('#form')[0].reset();
+		$("#form_error").html("");
+		$("#form_error").hide();
+		$(".regex-chips").chips();
+		$("#file_extension_chips").chips();
+		$("#file_control").hide();
+		$("#no_file").show();
+		$("#is_null").prop('disabled', false);
+		$("#default_value").prop('disabled', true);
 	}
 }( jQuery ));
