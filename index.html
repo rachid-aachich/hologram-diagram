@@ -9,6 +9,7 @@
         <script src="db-diagram.js"></script>
         <script src="fields.js"></script>
         <script src="tables.js"></script>
+        <script src="fieldSettings.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
         <script src="resources/jquery.contextMenu.min.js"></script>
         <script src="resources/materialize.min.js"></script>
@@ -22,7 +23,7 @@
             <ul>
                 <li id="edit_table"><i class="material-icons menu-icon">edit</i> <span>Edit Table</<span></li>
                 <li id="add_field"><i class="material-icons menu-icon">add</i> Add Field</li>
-                <li><i class="material-icons menu-icon">settings</i> Manage Fields</li>
+                <li id="manage_fields"><i class="material-icons menu-icon">settings</i> Manage Fields</li>
                 <li><i class="material-icons menu-icon">insert_link</i> Manage Relations</li>
                 <li><i class="material-icons menu-icon">rule</i> Table Rules</li>
                 <li><i class="material-icons menu-icon">remove_circle</i> Remove Table</li>
@@ -36,6 +37,11 @@
         </div>
         <div class="popup" id="table">
             <div class="popup-container" id="tableEditor">
+                
+            </div>
+        </div>
+        <div class="popup" id="field_settings" data-name="">
+            <div class="popup-container" id="field_settings_container">
                 
             </div>
         </div>
@@ -369,7 +375,7 @@
                             return table;
                         });
                     });
-                    
+
                     $("#add_field").click(function() {
                         let tableName = $(this).parent().parent().parent().attr('data-name');
                         $("#new_field").attr('data-name', tableName);
@@ -381,6 +387,16 @@
                         $("#table").attr('data-name', tableName);
                         $("#tableEditor").tableEditor();
                         $("#table").show();
+                    });
+
+                    $("#manage_fields").click(function() {
+                        let tableName = $(this).parent().parent().parent().attr('data-name');
+                        $("#field_settings").attr('data-name', tableName);
+                        let table = diagram.tables.find(function(table) {
+                            return table.name == tableName;
+                        });
+                        $("#field_settings_container").fieldSettings(table);
+                        $("#field_settings").show();
                     });
                     
                     /*tables[1].onPointerUp = function(pointer) {

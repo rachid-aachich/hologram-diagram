@@ -1256,27 +1256,37 @@ var Relation = /** @class */ (function (_super) {
                     attributes_1.applyAttribute(this.smany, { transform: "translate(" + p1.x + ", " + (p1.y - oneMidY) + ") rotate(180, 5, 4)" });
                 else
                     attributes_1.applyAttribute(this.pone, { transform: "translate(" + p1.x + ", " + (p1.y - oneMidY) + ")" });
-                attributes_1.applyAttribute(this.many, { transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY) + ")" });
-            }
-            else {
+                
+                if(this.options.type == "onetoone")
+                    attributes_1.applyAttribute(this.many, { transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY + 4) + ")" });
+                else
+                    attributes_1.applyAttribute(this.many, { transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY) + ")" });
+            } else {
                 p1 = fL.right;
                 p2 = pL.left;
                 if(this.options.type == "manytomany") {
                     attributes_1.applyAttribute(this.smany, {
                         transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY) + ")",
                     });
+                    attributes_1.applyAttribute(this.many, {
+                        transform: "translate(" + p1.x + ", " + (p1.y - manyMidY) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")",
+                    });
+                } else if(this.options.type == "onetoone") {
+                    attributes_1.applyAttribute(this.many, {
+                        transform: "translate(" + p1.x + ", " + (p1.y - manyMidY + 4) + ")",
+                    });
+                    attributes_1.applyAttribute(this.pone, { transform: "translate(" + (p2.x - oneSize.width) + ", " + (p2.y - oneMidY) + ")" });
                 } else {
                     attributes_1.applyAttribute(this.pone, { transform: "translate(" + (p2.x - oneSize.width) + ", " + (p2.y - oneMidY) + ")" });
+                    attributes_1.applyAttribute(this.many, {
+                        transform: "translate(" + p1.x + ", " + (p1.y - manyMidY) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")",
+                    });
                 }
-                attributes_1.applyAttribute(this.many, {
-                    transform: "translate(" + p1.x + ", " + (p1.y - manyMidY) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")",
-                });
             }
             var str = this.options.line ?
                 this.generateLineCurveInBetween(p1, p2) : this.generateCurveInBetween(p1, p2);
             attributes_1.applyAttribute(this.path, { d: str });
-        }
-        else {
+        } else {
             var pL = this.options.primaryTable.primaryFieldCoordinate();
             var fL = this.options.foreignTable.fieldCoordinate(this.options.foreignTable.fieldIndex(this.foriegnField));
             var right = false;
@@ -1285,13 +1295,20 @@ var Relation = /** @class */ (function (_super) {
                 p2 = fL.right;
                 right = true;
                 attributes_1.applyAttribute(this.pone, { transform: "translate(" + p1.x + ", " + (p1.y - oneMidY) + ")" });
-                attributes_1.applyAttribute(this.many, { transform: "translate(" + p2.x + ", " + (p2.y - manyMidY) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")",
-                });
-            }
-            else {
+                if(this.options.type == "onetoone")
+                    attributes_1.applyAttribute(this.many, { transform: "translate(" + p2.x + ", " + (p2.y - manyMidY - 4) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")"});
+                else
+                    attributes_1.applyAttribute(this.many, { transform: "translate(" + p2.x + ", " + (p2.y - manyMidY) + ") rotate(180, " + manyMidX + ", " + manyMidY + ")"});
+            } else {
                 p1 = pL.left;
                 p2 = fL.left;
-                attributes_1.applyAttribute(this.pone, { transform: "translate(" + (p1.x - oneSize.width) + ", " + (p1.y - oneMidY) + ")" });
+                if(this.options.type == "manytomany") {
+                    attributes_1.applyAttribute(this.smany, {
+                        transform: "translate(" + (p1.x - manySize.width) + ", " + (p1.y - manyMidY) + ")",
+                    });
+                } else {
+                    attributes_1.applyAttribute(this.pone, { transform: "translate(" + (p1.x - oneSize.width) + ", " + (p1.y - oneMidY) + ")" });
+                }
                 attributes_1.applyAttribute(this.many, { transform: "translate(" + (p2.x - manySize.width) + ", " + (p2.y - manyMidY) + ")" });
             }
             var str = this.options.line ?

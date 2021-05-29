@@ -172,7 +172,7 @@
 							<a class="waves-effect waves-light btn-large" id="save_field" type="submit">Add Field</a>
 						</div>
 					</form>`
-		let dataTypes = {'TINYINT': null,'SMALLINT': null,'MEDIUMINT': null,'INT': null,'BIGINT': null,'DECIMAL': null,'FLOAT': null,'DOUBLE': null,'BIT': null,'CHAR': null,'VARCHAR': null,'BINARY': null,'VARBINARY': null,'TINYBLOB': null,'BLOB': null,'MEDIUMBLOB': null,'LONGBLOB': null,'TINYTEXT': null,'TEXT': null,'MEDIUMTEXT': null,'LONGTEXT': null,'ENUM': null,'SET': null,'DATE': null,'TIME': null,'DATETIME': null,'TIMESTAMP': null,'YEAR': null,'GEOMETRY': null,'POINT': null,'LINESTRING': null,'POLYGON': null,'GEOMETRYCOLLECTION': null,'MULTILINESTRING': null,'MULTIPOINT': null,'MULTIPOLYGON': null,'JSON': null};
+		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
 		var RegexColorize = window.RegexColorize.default;
 		var rgx = new RegexColorize(); 
