@@ -1,21 +1,22 @@
 (function ( $ ) {
  	
-    $.fn.fields = function() {
+    $.fn.fields = function(field) {
+		let title = field ? 'Edit Field "' + field.name + '"' : 'Add New Field'
 		let html = `<form style="padding-bottom: 5px;" id="form">
 						<input type="hidden" id="new_field_table" />
-						<h4>Add New Field</h4>
+						<h4> <a href="#" id="go_back">Manage Fields</a> > ` + title + `</h4>
 						<div class="form-group">
-						  <input class="validate" id="fieldName" type="text" required="required"/>
+						  <input value="` + (field ? field.name : '') + `" class="validate ` + (field ? 'valid' : '') + `" id="fieldName" type="text" required="required"/>
 						  <label for="input" data-error="Please enter your first name." class="control-label invalid">Field Name</label>
 						</div>
 						<div class="form-group">
-						  <textarea id="fieldDesc" onfocus="this.placeholder = 'Field description that will be used in your API Documentation'" onblur="this.placeholder = ''"></textarea>
+						  <textarea id="fieldDesc" onfocus="this.placeholder = 'Field description that will be used in your API Documentation'" onblur="this.placeholder = ''">` + (field && field.description ? field.description : '') + `</textarea>
 						  <label for="textarea" class="control-label">Description</label><i class="bar"></i>
 						</div>
 						<i class="bar"></i>
 						<div class="checkbox">
 						  <label>
-							<input type="checkbox" id="is_file"/><i class="helper"></i>File
+							<input type="checkbox" id="is_file" ` + (field ? (field.file ? 'checked' : '') : '') + ` /><i class="helper"></i>File
 							<span class="hint">(Check if you want this field to represent a file)</span>
 						  </label>
 						</div>
@@ -24,13 +25,13 @@
 								<div class="row" style="padding-left: 0px;">
 									<div class="checkbox">
 									  <label>
-										<input type="checkbox" id="is_login"/><i class="helper"></i>Login
+										<input type="checkbox" id="is_login" ` + (field ? (field.login ? 'checked' : '') : '') + `/><i class="helper"></i>Login
 										<span class="hint">(Is the field a Login?)</span>
 									  </label>
 									</div>
-											<div class="checkbox">
+									<div class="checkbox">
 									  <label>
-										<input type="checkbox" id="is_password"/><i class="helper"></i>Password
+										<input type="checkbox" id="is_password" `+ (field ? (field.password ? 'checked' : '') : '')+` /><i class="helper"></i>Password
 										<span class="hint">(Is the field a Password?)</span>
 									  </label>
 									</div>
@@ -38,11 +39,11 @@
 							</div>
 							<div class="form-group" id="data_type_autocomplete_form">
 								<div class="input-field col s12">
-									<input type="text" id="data_type_autocomplete" class="autocomplete validate" required="required">
+									<input type="text" id="data_type_autocomplete" value="` + (field ? field.type : '') + `" class="autocomplete validate" required="required">
 									<label for="input" data-error="Please enter your first name." class="control-label invalid">Field Type</label>
 								</div>
 								<div class="input-field col s12">
-									<input type="text" id="field_size">
+									<input type="text" id="field_size" value="` + (field ? field.size : '') + `">
 									<label>Field Size</label>
 								</div>
 							</div>
@@ -50,7 +51,7 @@
 								<div class="row-2" style="padding-left: 0px; align-items: baseline;">
 									<div class="checkbox grid-first">
 									  <label>
-										<input type="checkbox" id="is_unique"/><i class="helper"></i>Unique
+										<input type="checkbox" id="is_unique" ` + (field && field.unique ? 'checked' : '') + `/><i class="helper"></i>Unique
 										<span class="hint">(Should the field value be unique?)</span>
 									  </label>
 									</div>
@@ -60,12 +61,12 @@
 								<div class="row-2" style="padding-left: 0px; align-items: baseline;">
 									<div class="checkbox grid-first">
 									  <label>
-										<input type="checkbox" id="is_null" checked/><i class="helper"></i>Null
+										<input type="checkbox" id="is_null" ` + (field ? (field.null ? 'checked' : '') : 'checked') + `/><i class="helper"></i>Null
 										<span class="hint">(Can the field be NULL?)</span>
 									  </label>
 									</div>
 									<div class="input-field col s12 grid-second" style="width: fit-content;">
-										<input type="text" placholder="Default value" id="default_value" disabled>
+										<input type="text" placholder="Default value" id="default_value" value="` + (field && field.default ? field.default : '') + `" ` + (field ? (field.null || field.autoIncrement ? 'disabled' : '') : 'disabled') + `>
 										<label>Default value</label>
 									</div>
 								</div>
@@ -74,12 +75,12 @@
 								<div class="row-2" style="padding-left: 0px; align-items: baseline;">
 									<div class="checkbox grid-first">
 									  <label>
-										<input type="checkbox" id="is_autoincrement"/><i class="helper"></i>Auto-increment
+										<input type="checkbox" id="is_autoincrement" ` + (field ? (field.null ? '' : (field.autoIncrement ? 'checked' : '')) : '') + `/><i class="helper"></i>Auto-increment
 										<span class="hint">(Is the field auto-incrementable?)</span>
 									  </label>
 									</div>
 									<div class="input-field col s12 grid-second" style="width: fit-content;">
-										<input type="number" placholder="1" id="increment_by" disabled>
+										<input type="number" placholder="1" id="increment_by" value="`+ (field ? (field.incrementBy ? field.incrementBy : '') : '') +`" ` + (field ? (field.null ? 'disabled' : '') : 'disabled') + `>
 										<label>Incement by</label>
 									</div>
 								</div>
@@ -116,10 +117,10 @@
 									<summary class="control-label title-label">File Size:</summary>
 									<div class="row-2" style="padding-left: 0px;">
 										<div class="input-field" style="padding-right: 10px;">
-											<input class="custom-class" type="number" placeholder="File Min Size" id="file_min_size">
+											<input class="custom-class" value="` + (field && field.file && field.fileMinSize ? field.fileMinSize : '') + `" type="number" placeholder="File Min Size" id="file_min_size">
 										</div>
 										<div class="input-field" style="padding-left: 10px;">
-											<input class="custom-class" type="number" placeholder="File Max Size" id="file_max_size">
+											<input class="custom-class" value="` + (field && field.file && field.fileMaxSize ? field.fileMaxSize : '') + `" type="number" placeholder="File Max Size" id="file_max_size">
 										</div>
 									</div>
 								</details>
@@ -130,27 +131,27 @@
 									<div class="row-5">
 										<div class="checkbox grid-first" style="padding-right: 0px;">
 											<label>
-												<input type="checkbox" id="document_type"/><i class="helper"></i>Document
+												<input type="checkbox" id="document_type" ` + (field && field.file && field.fileTypes.includes('document') ? 'checked' : '') + `/><i class="helper"></i>Document
 											</label>
 										</div>
 										<div class="checkbox grid-second">
 											<label>
-												<input type="checkbox" id="image_type"/><i class="helper"></i>Image
+												<input type="checkbox" id="image_type" ` + (field && field.file && field.fileTypes.includes('image') ? 'checked' : '') + `/><i class="helper"></i>Image
 											</label>
 										</div>
 										<div class="checkbox grid-third" style="padding-left: 0px;">
 											<label>
-												<input type="checkbox" id="video_type"/><i class="helper"></i>Video
+												<input type="checkbox" id="video_type" ` + (field && field.file && field.fileTypes.includes('video') ? 'checked' : '') + `/><i class="helper"></i>Video
 											</label>
 										</div>
 										<div class="checkbox grid-forth">
 											<label>
-												<input type="checkbox" id="audio_type"/><i class="helper"></i>Audio
+												<input type="checkbox" id="audio_type" ` + (field && field.file && field.fileTypes.includes('audio') ? 'checked' : '') + `/><i class="helper"></i>Audio
 											</label>
 										</div>
 										<div class="checkbox grid-fifth">
 											<label>
-												<input type="checkbox" id="other_type"/><i class="helper"></i>Other
+												<input type="checkbox" id="other_type" ` + (field && field.file && field.fileTypes.includes('other') ? 'checked' : '') + `/><i class="helper"></i>Other
 											</label>
 										</div>
 									</div>
@@ -160,7 +161,7 @@
 								<details class="feature">
 									<summary class="control-label title-label">Allowed File Extensions:</summary>
 									<div>
-										<div class="chips input-field" id="file_extension_chips">
+										<div class="chips chips-initial input-field" id="file_extension_chips">
 											<input class="custom-class" id="file_extension_input">
 										</div>
 									</div>
@@ -169,13 +170,72 @@
 						</div>
 						<div class="form-group" style="text-align: center; margin-top: 0px;">
 							<div class="error" id="form_error"></div>
-							<a class="waves-effect waves-light btn-large" id="save_field" type="submit">Add Field</a>
+							<a class="waves-effect waves-light btn-large" id="save_field" type="submit">` + (field ? `Save Field` : `Add Field`) + `</a>
 						</div>
 					</form>`
-		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
+		let dataTypes = {'boolean': null,'int': null,'decimal': null,'double': null,'varchar': null,'string': null,'text': null,'datetime': null,'timestamp': null,'json': null};
         this.html(html);
 		var RegexColorize = window.RegexColorize.default;
-		var rgx = new RegexColorize(); 
+		var rgx = new RegexColorize();
+				
+		$("#go_back").click(function(e) {
+			e.preventDefault();
+			$.fn.goBackCallback();
+		});
+
+		function toggleFileSettings() {
+			$("#no_file").hide();
+			$("#file_control").show();
+		}
+
+		function togglePasswordSettings() {
+			$("#is_login").prop('checked', false);
+			$("#data_type_autocomplete_form").hide();
+			$("#unique").hide();
+			$("#null").hide();
+			$("#increment").hide();
+		}
+
+		/** Edit Field */
+		if(field) {
+			console.log(field);
+			validate();
+
+			if(field.file)
+				toggleFileSettings();
+
+			if(field.password)
+				togglePasswordSettings();
+
+			if(field.regex && field.regex.length > 0) {
+				field.regex.forEach(function(element, index) {
+					let tag = element.message.substring(0, 15);
+					let chip = `<div class="chip regex-chip" data-regex="" data-message="">
+									` + tag + `
+									<i class="close material-icons">close</i>
+								</div>`;
+					let chipElem = $(chip);
+					chipElem.attr("data-regex", element.rule);
+					chipElem.attr("data-message", element.message);
+
+					$(".regex-chips").append(chipElem.get(0).outerHTML);
+				});
+			}
+
+			if(field.file && field.fileExtensions) {
+				field.fileExtensions.forEach(function(extension, index) {
+					let chip = '<div class="chip" tabindex="' + index + '">' + extension + '<i class="material-icons close">close</i></div>';
+					$("#file_extension_chips").parent().append(chip);
+				});
+				$("#file_extension_chips").chips();
+				/*$("#file_extension_chips").chips('addChip', {
+					tag: 'chip content',
+					image: '', // optional
+				});*/
+				//$("#file_extension_chips").chips({data: [{tag: 'Apple',}, {tag: 'Microsoft',}, {tag: 'Google',}],});
+			}
+			//if(field.)
+		}
 
 		$("#data_type_autocomplete").autocomplete({
 		  data: dataTypes,
@@ -190,8 +250,7 @@
 
 		$("#is_file").change(function() {
 			if(this.checked) {
-				$("#no_file").hide();
-				$("#file_control").show();
+				toggleFileSettings();
 			} else {
 				$("#no_file").show();
 				$("#file_control").hide();
@@ -229,11 +288,7 @@
 
 		$("#is_password").change(function() {
 			if(this.checked) {
-				$("#is_login").prop('checked', false);
-				$("#data_type_autocomplete_form").hide();
-				$("#unique").hide();
-				$("#null").hide();
-				$("#increment").hide();
+				togglePasswordSettings();
 			} else {
 				$("#data_type_autocomplete_form").show();
 				$("#unique").show();
@@ -275,7 +330,7 @@
 						</div>`;
 			let chipElem = $(chip);
 			chipElem.attr("data-regex", $("#regex_text").val());
-			chipElem.attr("data-message", tag);
+			chipElem.attr("data-message", $("#regex_error_message").val());
 			let regexExists = false;
 			$(".regex-chips").children('.chip').each(function() { 
 				let el = $(this);
@@ -354,23 +409,38 @@
 			//console.log('changed');
 		});
 
-		function isEmpty(value){
+		function isEmpty(value) {
 			return (value == null || value.length === 0 || value === '');
 		}
 
 		function validate() {
-			if(!$("#fieldName").hasClass('valid')) {
+			if(!$("#fieldName").hasClass('valid'))
+			{
 				$.fn.error("Field name is required", "fieldName");
 				return false;
 			}
+
 			if(isEmpty(getField().type))
 			{
 				$.fn.error("Field type is required", "data_type_autocomplete");
 				return false;
 			}
 
+			let validType = false;
+			$.each(dataTypes, function(index, value) {
+				if(index == getField().type)
+					validType = true;
+			});
+
+			if(getField().type != "Password" && getField().type != "File" && !validType)
+			{
+				$.fn.error("Invalid field type", "data_type_autocomplete");
+				return false;
+			}
+
 			return true;
 		}
+
 		function getField() {
 			let name = $("#fieldName").val();
 			let type = null;
@@ -457,6 +527,10 @@
 		rgx.colorizeAll();
         return this;
     };
+
+	$.fn.onGoBack = function(mycallback) {
+		$.fn.goBackCallback = mycallback
+	}
 	
 	$.fn.onFieldSave = function(mycallback) {
 		$.fn.callback = mycallback

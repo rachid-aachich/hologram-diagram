@@ -22,27 +22,37 @@
         $.each(table.fieldsUi, function(index, field) {
             let fieldOptions = field.fieldOptions;
             let primary = fieldOptions.primary ? 'checked' : '';
-            console.log(fieldOptions);
             $("#field_list").append(`<tr>
                                         <td data-title="name">` + fieldOptions.name + `</td>
                                         <td data-title="primary">
                                             <div class="checkbox" style="padding-left: 36px; padding-bottom: 26px;">
                                                 <label>
-                                                <input type="checkbox" ` + primary + `/><i class="helper"></i>
+                                                    <input type="checkbox" ` + primary + `/><i class="helper"></i>
                                                 </label>
                                             </div>
                                         </td>
                                         <td data-title="actions">
-                                            <i class="material-icons menu-icon action-icon">edit</i> 
-                                            <i class="material-icons menu-icon action-icon">delete</i> 
+                                            <i class="material-icons menu-icon action-icon edit_field" id="" data-index="` + index + `">edit</i> 
+                                            <i class="material-icons menu-icon action-icon delete_field" id="" data-index="` + index + `">delete</i> 
                                         </td>
                                     </tr>`
             );
         });
+
+        $(".edit_field").click(function() {
+            let index = $(this).attr('data-index');
+            let fieldOptions;
+            $.each(table.fieldsUi, function(i, field) {
+                if(i == index)
+                    fieldOptions = field.fieldOptions;
+            });
+            $.fn.callback(fieldOptions);
+        });
+
         return this;
     };
 	
-	$.fn.onFieldSave = function(mycallback) {
+	$.fn.onFieldEdit = function(mycallback) {
 		$.fn.callback = mycallback
 	}
 
