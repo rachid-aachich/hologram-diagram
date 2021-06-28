@@ -78,13 +78,14 @@
                         const table = diagram.table(tbOpt);
                         table.x(tbl.meta.positionX).y(tbl.meta.positionY);
                         tbl.columns.forEach((field) => {
+                            let f = {"name": field.name, "type": field.type, "login": field.login, "unique": field.unique, "column": field};
                             if(field.name == tbl.identifier)
-                                field.primary = true;
+                                f.primary = true;
                             if(field.password)
-                                field.type = "Password";
+                                f.type = "Password";
                             if(field.file)
-                                field.type = "File";
-                            table.addField(field);
+                                f.type = "File";
+                            table.addField(f);
                         });
                         tables.push(table);
                     });
@@ -252,7 +253,6 @@
                     tables.forEach(function (table) {
                         table.onPositionChange = function(p) {
                             this.fieldsUi.forEach(function (item) {
-                                console.log(item);
                                 if (item.relation && item.relation.length > 0) {
                                     item.relation.forEach(function (relation) {
                                         relation.render();
@@ -341,7 +341,7 @@
                         }
                     );
                     
-                    $("#rule_chips").find("input").prop( "disabled", true );
+                    $("#rule_chips").find("input").prop("disabled", true );
 
                     $("#fields").onFieldSave(function(field) {
                         let tableName = $("#fields").parent().attr('data-name');
@@ -404,6 +404,22 @@
                             $("#fields").fields(field);
                             $("#fields").onGoBack(function() {
                                 $("#manage_fields").trigger( "click" );
+                            });
+
+                            $("#fields").onFieldSave(function(field) {
+                                diagram.tables.map(function(tbl) {
+                                    if(tbl.name == table.name) {
+                                        let error = false;
+                                        tbl.fieldsUi.forEach(function(f, index) {
+                                            if(field.original_name == f.fieldOptions.name) {
+                                                tbl.updateField(index, field);
+                                                console.log(f);
+                                                console.log(field);
+                                            }
+                                        });
+                                    }
+                                    return tbl;
+                                });
                             });
                         });
                         $("#field_settings").show();

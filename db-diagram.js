@@ -2019,11 +2019,14 @@ var Table = /** @class */ (function (_super) {
         fieldUi.name.textContent = options.name;
         fieldUi.type.textContent = options.typeRaw;
         this.wrapped.appendChild(fieldUi.fieldGroup);
-        if (index && index >= 0 && index <= this.fieldsUi.length) {
+        if (index && index >= 0 && index <= this.fieldsUi.length)
+        {
+            console.log("slicing: ", index)
             this.fieldsUi.splice(index, 0, fieldUi);
             return index;
         }
-        else {
+        else
+        {
             this.fieldsUi.push(fieldUi);
             return this.fieldsUi.length - 1;
         }
@@ -2032,7 +2035,7 @@ var Table = /** @class */ (function (_super) {
      * Remove field from table.
      * @param index field index
      */
-    Table.prototype.removeField = function (index) {
+    Table.prototype.removeField = function (index, resize = true) {
         if (index < this.fieldsUi.length) {
             var fieldUi = Object.assign({}, this.fieldsUi[index]);
             this.fieldsUi.splice(index, 1);
@@ -2040,16 +2043,33 @@ var Table = /** @class */ (function (_super) {
             var space_1 = 6;
             var rowHeight = Math.max(fieldUi.type.getBBox().height, fieldUi.name.getBBox().height);
             var mW_1 = 0;
+            let context = this;
             this.fieldsUi.forEach(function (fUI) {
+                console.log(fUI);
+           /*     attributes_1.applyAttribute(context.fieldsUi, {
+                    transform: "translate(0," + 30 + ")",
+                });*/
                 var typeWidth = fUI.type.getBBox().width;
                 mW_1 = Math.max(mW_1, size_1.width, fUI.name.getBBox().width + typeWidth + 16 + 16 + 8 + (space_1 * 3));
             });
             var visual = this.parent.visualization;
             this.wrapped.removeChild(fieldUi.fieldGroup);
-            var totalFieldHeight = (rowHeight * (this.fieldsUi.length));
+            var totalFieldHeight = (rowHeight * (this.fieldsUi.length + 1));
             var rowY = visual.tableHeaderHeight + totalFieldHeight;
-            this.onSizeChange(mW_1, rowY + visual.tableFooterHeight + (4 + space_1));
+            if(resize)
+                this.onSizeChange(mW_1, rowY + visual.tableFooterHeight + (4 + space_1));
             return fieldUi.fieldOptions;
+        }
+        throw new Error("Index not exist");
+    };
+    /**
+     * Update field in table.
+     * @param index field index
+     */
+     Table.prototype.updateField = function (index, field) {
+        if (index < this.fieldsUi.length) {
+            this.removeField(index);
+            return this.addField(field, index);
         }
         throw new Error("Index not exist");
     };
@@ -2163,10 +2183,10 @@ var Table = /** @class */ (function (_super) {
             if (height < this.size.height) {
                 this.fieldsUi.forEach(function (fieldUi, index) {
                     var rowHeight = visual.tableFieldHeight;
-                    var totalFieldHeight = (rowHeight * (index + 1));
+                    var totalFieldHeight = (rowHeight * (index));
                     var rowY = visual.tableHeaderHeight + totalFieldHeight;
                     attributes_1.applyAttribute(fieldUi.fieldGroup, {
-                        transform: "translate(0," + rowY + ")",
+                        transform: "translate(0," + (rowY) + ")",
                     });
                 });
             }

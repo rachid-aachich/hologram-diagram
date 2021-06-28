@@ -4,6 +4,7 @@
 		let title = field ? 'Edit Field "' + field.name + '"' : 'Add New Field'
 		let html = `<form style="padding-bottom: 5px;" id="form">
 						<input type="hidden" id="new_field_table" />
+						<input type="hidden" id="original_name" value="` + (field ? field.name : '') + `"/>
 						<h4> <a href="#" id="go_back">Manage Fields</a> > ` + title + `</h4>
 						<div class="form-group">
 						  <input value="` + (field ? field.name : '') + `" class="validate ` + (field ? 'valid' : '') + `" id="fieldName" type="text" required="required"/>
@@ -131,27 +132,27 @@
 									<div class="row-5">
 										<div class="checkbox grid-first" style="padding-right: 0px;">
 											<label>
-												<input type="checkbox" id="document_type" ` + (field && field.file && field.fileTypes.includes('document') ? 'checked' : '') + `/><i class="helper"></i>Document
+												<input type="checkbox" id="document_type" ` + (field && field.file && field.fileTypes ? (field.fileTypes.includes('document') ? 'checked' : '') : '') + `/><i class="helper"></i>Document
 											</label>
 										</div>
 										<div class="checkbox grid-second">
 											<label>
-												<input type="checkbox" id="image_type" ` + (field && field.file && field.fileTypes.includes('image') ? 'checked' : '') + `/><i class="helper"></i>Image
+												<input type="checkbox" id="image_type" ` + (field && field.file && field.fileTypes ? (field.fileTypes.includes('image') ? 'checked' : '') : '') + `/><i class="helper"></i>Image
 											</label>
 										</div>
 										<div class="checkbox grid-third" style="padding-left: 0px;">
 											<label>
-												<input type="checkbox" id="video_type" ` + (field && field.file && field.fileTypes.includes('video') ? 'checked' : '') + `/><i class="helper"></i>Video
+												<input type="checkbox" id="video_type" ` + (field && field.file && field.fileTypes ? (field.fileTypes.includes('video') ? 'checked' : '') : '')  + `/><i class="helper"></i>Video
 											</label>
 										</div>
 										<div class="checkbox grid-forth">
 											<label>
-												<input type="checkbox" id="audio_type" ` + (field && field.file && field.fileTypes.includes('audio') ? 'checked' : '') + `/><i class="helper"></i>Audio
+												<input type="checkbox" id="audio_type" ` + (field && field.file && field.fileTypes ? (field.fileTypes.includes('audio') ? 'checked' : '') : '')  + `/><i class="helper"></i>Audio
 											</label>
 										</div>
 										<div class="checkbox grid-fifth">
 											<label>
-												<input type="checkbox" id="other_type" ` + (field && field.file && field.fileTypes.includes('other') ? 'checked' : '') + `/><i class="helper"></i>Other
+												<input type="checkbox" id="other_type" ` + (field && field.file && field.fileTypes ? (field.fileTypes.includes('other') ? 'checked' : '') : '')  + `/><i class="helper"></i>Other
 											</label>
 										</div>
 									</div>
@@ -160,7 +161,7 @@
 							<section>
 								<details class="feature">
 									<summary class="control-label title-label">Allowed File Extensions:</summary>
-									<div>
+									<div id="extension_chips_container">
 										<div class="chips chips-initial input-field" id="file_extension_chips">
 											<input class="custom-class" id="file_extension_input">
 										</div>
@@ -221,11 +222,10 @@
 					$(".regex-chips").append(chipElem.get(0).outerHTML);
 				});
 			}
-
 			if(field.file && field.fileExtensions) {
 				field.fileExtensions.forEach(function(extension, index) {
-					let chip = '<div class="chip" tabindex="' + index + '">' + extension + '<i class="material-icons close">close</i></div>';
-					$("#file_extension_chips").parent().append(chip);
+					let chip = '<div class="chip" data-extension='+ extension +' tabindex="' + index + '">' + extension + '<i class="material-icons close">close</i></div>';
+					$("#extension_chips_container").append(chip);
 				});
 				$("#file_extension_chips").chips();
 				/*$("#file_extension_chips").chips('addChip', {
@@ -243,7 +243,7 @@
 
 		$("#file_extension_chips").chips({placeholder: 'Enter extension', secondaryPlaceholder: 'Enter extension',});
 		$("#file_extension_chips").show();
-		$("#file_extension_input").keypress(function(e){
+		$("#file_extension_input").keypress(function(e) {
 			if(e.keyCode == 32)
 				e.preventDefault();
 		});
@@ -367,8 +367,10 @@
 
 		$("#save_field").click(function() {
 			if(validate()) {
-				let field = getField();
-				$.fn.callback(field);
+				if(field)
+					$.fn.callback(getField());
+				else
+					$.fn.callback(getField());
 			}
 		});
 
@@ -445,6 +447,7 @@
 			let name = $("#fieldName").val();
 			let type = null;
 			let size = $("#field_size").val();
+			let description = $("#fieldDesc").val();
 
 			if($("#is_file").is(":checked"))
 				type = "File";
@@ -493,11 +496,23 @@
 				});
 			}
 
+			if($("#extension_chips_container").find('.chip').length > 0) {
+				$("#extension_chips_container").children('.chip').each(function() {
+					fileExtensions.push($(this).attr('data-extension'));
+				});
+			}
+
+			fileExtensions = fileExtensions.filter(function(item, pos) {
+				return fileExtensions.indexOf(item) == pos;
+			})
+
 			let realType = type;
 			if(is_file)
 				realType = "text";
 			else if(is_password)
 				realType = "varchar";
+
+			let original_name = $("#original_name").val();
 
 			let column = {
 				"name": name,
@@ -506,6 +521,7 @@
 				"foreign": false,
 				"reference": null,
 				"foreignKey": null,
+				"description": description,
 				"autoIncrement": is_autoincrement,
 				"incrementBy": increment_by,
 				"id": false,
@@ -522,7 +538,7 @@
 				"fileExtensions": fileExtensions
 			}
 
-			return {"name": name, "type": type, "login": is_login, "unique": is_unique, "column": column};
+			return {"name": name, "original_name": original_name, "type": type, "login": is_login, "unique": is_unique, "column": column};
 		}
 		rgx.colorizeAll();
         return this;
