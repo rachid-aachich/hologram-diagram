@@ -1693,7 +1693,7 @@ var Table = /** @class */ (function (_super) {
         return _this;
     }
     // create field table element.
-    Table.createField = function (table, options) {
+    Table.createField = function (table, options, index = null) {
         var visual = table.parent.visualization;
         var icons = visual.getIconsDts();
         var styles = visual.getStylesDts();
@@ -1784,9 +1784,28 @@ var Table = /** @class */ (function (_super) {
             fieldUi.mark = base_1.Base.createElement("use");
             fieldUi.fieldGroup.appendChild(fieldUi.mark);
         }
-        var totalFieldHeight = (rowHeight * (table.fieldsUi.length));
+        /*table.fieldsUi.forEach(function (fieldUi, index) {
+            var rowHeight = visual.tableFieldHeight;
+            var totalFieldHeight = (rowHeight * (index));
+            var rowY = visual.tableHeaderHeight + totalFieldHeight;
+            attributes_1.applyAttribute(fieldUi.fieldGroup, {
+                transform: "translate(0," + (rowY) + ")",
+            });
+        });*/
+
+        var totalFieldHeight = index === null ? (rowHeight * (table.fieldsUi.length)) : (rowHeight * (index));
         var rowY = visual.tableHeaderHeight + totalFieldHeight + padding.top;
-        table.onSizeChange(fieldWidth, rowY + visual.tableFooterHeight + visual.tableFieldHeight + padding.bottom);
+        console.log("----------------------");
+        console.log("index", index);
+        console.log("rowHeight", rowHeight);
+        console.log("totalFieldHeight", totalFieldHeight);
+        console.log("rowY", rowY);
+        console.log("----------------------");
+        if(index === null) {
+            table.onSizeChange(fieldWidth, rowY + visual.tableFooterHeight + visual.tableFieldHeight + padding.bottom);
+        } else {
+            table.onSizeChange(fieldWidth);
+        }
         attributes_1.applyAttribute(fieldUi.fieldGroup, { transform: "translate(0," + rowY + ")" });
         return fieldUi;
     };
@@ -2010,20 +2029,33 @@ var Table = /** @class */ (function (_super) {
      * @param options field options.
      * @param index index of the field.
      */
-    Table.prototype.addField = function (options, index) {
+    Table.prototype.addField = function (options, index = null) {
         options.typeRaw = "" + options.type.toLowerCase();
         if (options.typeSize && options.typeSize > 0) {
             options.typeRaw += "(" + options.typeSize + ")";
         }
-        var fieldUi = Table.createField(this, options);
+        var fieldUi = Table.createField(this, options, index);
         fieldUi.name.textContent = options.name;
         fieldUi.type.textContent = options.typeRaw;
+        console.log("index", index);
+       /* if(index != null) {
+            console.log("wrapped", this.wrapped);
+            if (index >= this.wrapped.children.length) {
+                this.wrapped.appendChild(fieldUi.fieldGroup)
+            } else {
+                this.wrapped.insertBefore(fieldUi.fieldGroup, this.wrapped.children[index])
+            }
+        } else {
+            this.wrapped.appendChild(fieldUi.fieldGroup);
+        }*/
         this.wrapped.appendChild(fieldUi.fieldGroup);
-        if (index && index >= 0 && index <= this.fieldsUi.length)
+        if (index != null && index >= 0 && index <= this.fieldsUi.length)
         {
-            console.log("slicing: ", index)
             this.fieldsUi.splice(index, 0, fieldUi);
-            return index;
+            //this.fieldsUi[index] = fieldUi;
+            console.log("fields", this.fieldsUi);
+
+            return fieldUi;
         }
         else
         {
@@ -2038,17 +2070,14 @@ var Table = /** @class */ (function (_super) {
     Table.prototype.removeField = function (index, resize = true) {
         if (index < this.fieldsUi.length) {
             var fieldUi = Object.assign({}, this.fieldsUi[index]);
-            this.fieldsUi.splice(index, 1);
+            this.fieldsUi = this.fieldsUi.filter(function( obj, i ) {
+                return index != i;
+            });
             var size_1 = this.parent.preference.table.minimumSize;
             var space_1 = 6;
             var rowHeight = Math.max(fieldUi.type.getBBox().height, fieldUi.name.getBBox().height);
             var mW_1 = 0;
-            let context = this;
             this.fieldsUi.forEach(function (fUI) {
-                console.log(fUI);
-           /*     attributes_1.applyAttribute(context.fieldsUi, {
-                    transform: "translate(0," + 30 + ")",
-                });*/
                 var typeWidth = fUI.type.getBBox().width;
                 mW_1 = Math.max(mW_1, size_1.width, fUI.name.getBBox().width + typeWidth + 16 + 16 + 8 + (space_1 * 3));
             });
@@ -2059,8 +2088,8 @@ var Table = /** @class */ (function (_super) {
             if(resize)
                 this.onSizeChange(mW_1, rowY + visual.tableFooterHeight + (4 + space_1));
             return fieldUi.fieldOptions;
-        }
-        throw new Error("Index not exist");
+        } else
+            throw new Error("Index not exist");
     };
     /**
      * Update field in table.
@@ -2068,10 +2097,11 @@ var Table = /** @class */ (function (_super) {
      */
      Table.prototype.updateField = function (index, field) {
         if (index < this.fieldsUi.length) {
-            this.removeField(index);
+            this.removeField(index, false);
             return this.addField(field, index);
         }
-        throw new Error("Index not exist");
+        else
+            throw new Error("Index not exist");
     };
     /**
      * Accumulate the bounding box value to it root element.
@@ -2087,7 +2117,6 @@ var Table = /** @class */ (function (_super) {
      */
     Table.prototype.onPositionChange = function (p) {
         this.fieldsUi.forEach(function (item) {
-            console.log(item);
             if (item.relation && item.relation.length > 0) {
                 item.relation.forEach(function (relation) {
                     relation.render();
@@ -2174,12 +2203,12 @@ var Table = /** @class */ (function (_super) {
      * @param width table width
      * @param height table height
      */
-    Table.prototype.onSizeChange = function (width, height) {
+    Table.prototype.onSizeChange = function (width, height = null) {
         var updateFooter = false;
         var updateHeader = false;
         var visual = this.parent.visualization;
         var padding = elements_1.Visualization.TableTextPadding;
-        if (height !== this.size.height) {
+        if (height !== this.size.height && height != null) {
             if (height < this.size.height) {
                 this.fieldsUi.forEach(function (fieldUi, index) {
                     var rowHeight = visual.tableFieldHeight;

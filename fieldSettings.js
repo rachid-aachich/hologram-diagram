@@ -2,6 +2,7 @@
  	
     $.fn.fieldSettings = function(table) {
 		let html = `<h4>Manage Fields</h4>
+                    <div class="success" id="form_alert" style="padding-left: 58px;">Invalid field type</div>
                     <!-- Responsive table starts here -->
                     <!-- For correct display on small screens you must add 'data-title' to each 'td' in your table -->
                     <div class="table-responsive-vertical shadow-z-1">
@@ -27,13 +28,13 @@
                                         <td data-title="primary">
                                             <div class="checkbox" style="padding-left: 36px; padding-bottom: 26px;">
                                                 <label>
-                                                    <input type="checkbox" ` + primary + `/><i class="helper"></i>
+                                                    <input class="primary_checkbox" type="checkbox" ` + primary + `  data-name="` + fieldOptions.name + `" data-index="` + index + `"/><i class="helper"></i>
                                                 </label>
                                             </div>
                                         </td>
                                         <td data-title="actions">
                                             <i class="material-icons menu-icon action-icon edit_field" id="" data-index="` + index + `">edit</i> 
-                                            <i class="material-icons menu-icon action-icon delete_field" id="" data-index="` + index + `">delete</i> 
+                                            ` + (table.fieldsUi.length > 1 ? `<i class="material-icons menu-icon action-icon delete_field" id="" data-index="` + index + `">delete</i>` : '') + `
                                         </td>
                                     </tr>`
             );
@@ -49,11 +50,37 @@
             $.fn.callback(fieldOptions);
         });
 
+        $(".delete_field").click(function() {
+            let index = $(this).attr('data-index');
+            let fieldOptions;
+            $.each(table.fieldsUi, function(i, field) {
+                if(i == index)
+                    fieldOptions = field.fieldOptions;
+            });
+            $.fn.removeCallback(fieldOptions);
+            $(this).closest('tr').remove();
+            $("#form_alert").text('Field removed successfully!').show();
+        });
+
+        $(".primary_checkbox").change(function() {
+            $('.primary_checkbox').not(this).prop('checked', false);  
+            let name = $(this).attr('data-name');
+            $.fn.changePrimaryKey(name, $(this).is(":checked"));
+        });
+
         return this;
     };
 	
 	$.fn.onFieldEdit = function(mycallback) {
 		$.fn.callback = mycallback
+	}
+
+    $.fn.onFieldRemove = function(mycallback) {
+		$.fn.removeCallback = mycallback
+	}
+
+    $.fn.onPrimaryKeyChange = function(mycallback) {
+		$.fn.changePrimaryKey = mycallback
 	}
 
 	$.fn.error = function(error, input_id = false) {

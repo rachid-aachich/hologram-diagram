@@ -412,16 +412,111 @@
                                         let error = false;
                                         tbl.fieldsUi.forEach(function(f, index) {
                                             if(field.original_name == f.fieldOptions.name) {
-                                                tbl.updateField(index, field);
-                                                console.log(f);
-                                                console.log(field);
+                                               // tbl.updateField(index, field);
+                                                
+                                                let v = tbl.updateField(index, field);
+                                                let primaryTable = null;
+                                                let relationType = null;
+                                                let relationWeak = false;
+                                                let relationLine = false;
+                                                if (f.relation && f.relation.length > 0) {
+                                                    f.relation.forEach(function (relation) {
+                                                        primaryTable = relation.options.primaryTable;
+                                                        relationType = relation.options.type;
+                                                        relationWeak = relation.options.weak;
+                                                        relationLine = relation.options.line;
+                                                        relation.foriegnField = field;
+                                                        relation.render().detach(diagram);
+                                                    });
+
+                                                    new DBDiagram.Relation(diagram, {
+                                                        primaryTable: primaryTable,
+                                                        foreignField: v.fieldOptions,
+                                                        foreignTable: tbl,
+                                                        foreignFieldExists: true,
+                                                        type: relationType,
+                                                        line: relationLine,
+                                                        weak: relationWeak
+                                                    });
+                                                }
                                             }
                                         });
                                     }
                                     return tbl;
                                 });
+
+                                $("#manage_fields").trigger( "click" );
+                                $("#form_alert").text('Field updated successfully!').show();
                             });
                         });
+
+                        $("#field_settings_container").onFieldRemove(function(field) {
+                            diagram.tables.map(function(tbl) {
+                                if(tbl.name == table.name) {
+                                    tbl.fieldsUi.forEach(function(f, index) {
+                                        if(field.name == f.fieldOptions.name) {
+                                            if (f.relation && f.relation.length > 0) {
+                                                f.relation.forEach(function (relation) {
+                                                    relation.render().detach(diagram);
+                                                });
+                                            }
+                                            tbl.removeField(index);
+                                        }
+                                    });
+                                }
+                                return tbl;
+                            });
+                        });
+
+                        $("#field_settings_container").onPrimaryKeyChange(function(name, isChecked) {
+                            diagram.tables.map(function(tbl) {
+                                
+                                if(tbl.name == table.name) {
+                                    tbl.fieldsUi.forEach(function(f, i) {
+                                        let v =  null;
+                                        if(f.fieldOptions.name == name) {
+                                            f.fieldOptions.primary = isChecked;
+                                            f.fieldOptions.column.primary = isChecked;
+                                            v = tbl.updateField(i, f.fieldOptions);
+                                        }
+                                        else
+                                        {
+                                            f.fieldOptions.primary = false;
+                                            f.fieldOptions.column.primary = false;
+                                            v = tbl.updateField(i, f.fieldOptions);
+                                        }
+
+                                        let primaryTable = null;
+                                        let relationType = null;
+                                        let relationWeak = false;
+                                        let relationLine = false;
+                                        if (f.relation && f.relation.length > 0) {
+                                            f.relation.forEach(function (relation) {
+                                                primaryTable = relation.options.primaryTable;
+                                                relationType = relation.options.type;
+                                                relationWeak = relation.options.weak;
+                                                relationLine = relation.options.line;
+                                                relation.foriegnField = f.fieldOptions;
+                                                relation.render().detach(diagram);
+                                            });
+
+                                            new DBDiagram.Relation(diagram, {
+                                                primaryTable: primaryTable,
+                                                foreignField: v.fieldOptions,
+                                                foreignTable: tbl,
+                                                foreignFieldExists: true,
+                                                type: relationType,
+                                                line: relationLine,
+                                                weak: relationWeak
+                                            });
+                                        }
+                                    });
+                                }
+                                
+                                return tbl;
+                            });
+                        });
+
                         $("#field_settings").show();
                     });
                     
