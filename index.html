@@ -11,6 +11,7 @@
         <script src="tables.js"></script>
         <script src="fieldSettings.js"></script>
         <script src="relationSettings.js"></script>
+        <script src="tableRules.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
         <script src="resources/jquery.contextMenu.min.js"></script>
         <script src="resources/materialize.min.js"></script>
@@ -26,14 +27,18 @@
                 <li id="add_field"><i class="material-icons menu-icon">add</i> Add Field</li>
                 <li id="manage_fields"><i class="material-icons menu-icon">settings</i> Manage Fields</li>
                 <li id="manage_relations"><i class="material-icons menu-icon">insert_link</i> Manage Relations</li>
-                <li><i class="material-icons menu-icon">rule</i> Table Rules</li>
-                <li><i class="material-icons menu-icon">remove_circle</i> Remove Table</li>
+                <li id="table_rules"><i class="material-icons menu-icon">rule</i> Table Rules</li>
+                <li id="remove_table">
+                    <i class="material-icons menu-icon">remove_circle</i>
+                    Remove Table
+                </li>
             </ul>
             </div>
             <div class="arrow"></div>
         </div>
         <div class="popup" id="new_field" data-name="">
             <div class="popup-container" id="fields">
+
             </div>
         </div>
         <div class="popup" id="table">
@@ -49,6 +54,24 @@
         <div class="popup" id="relation_settings" data-name="" style="overflow-y: auto;">
             <div class="popup-container" id="relation_settings_container" style="height: 100%; margin: auto;">
                 
+            </div>
+        </div>
+        <div class="popup" id="rule_settings" data-name="" style="overflow-y: auto;">
+            <div class="popup-container" id="rule_settings_container" style="height: 110%; margin: auto;">
+                
+            </div>
+        </div>
+        <!-- Table Remove Confirmation Modal -->
+        <div class="popup" id="table_remove" style="display: none; height: min-content; overflow: hidden;">
+            <div class="popup-container" id="table_remove" style="padding: 10px;">
+                <div class="modal-content">
+                    <h5>Are you sure you want to remove this table?</h5>
+                    <p style="padding-bottom: 20px;">Note: All data related to the table will be remove, including the foreign constraints and relations.</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="#!" style="background-color: lightslategrey;" id="confirm_table_remove" class="waves-effect waves-green btn-flat">Remove</a>
+                    <a href="#!" style="background-color: firebrick;" id="cancel_table_remove" class="waves-effect waves-green btn-flat">Cancel</a>
+                </div>
             </div>
         </div>
         <script>
@@ -94,6 +117,7 @@
                                 f.type = "File";
                             table.addField(f);
                         });
+                        table.rules = tbl.rules;
                         tables.push(table);
                     });
                     /*let data = [
@@ -184,7 +208,6 @@
                             line: true,
                             weak: relation.type == 'ManyToMany'
                         });
-                        console.log("r", r);
                         window.store.relations.push(r);
                     });
 
@@ -302,6 +325,22 @@
                                 currentMousePos.y = event.pageY;
                             });
                             $("#tableEditor").tableEditor();
+                            $("#tableEditor").onNewTable(function(tbOpt) {
+                                console.log("tables", tables);
+                                const tableExists = tables.some(tbl => tbl.name === tbOpt.name);
+                                if(tableExists)
+                                    return false;
+                                const fields = tbOpt.fields;
+                                delete tbOpt.fields;
+                                const table = diagram.table(tbOpt);
+                                fields.forEach((field) => { table.addField(field) });
+                                table.x(window.contextClickX).y(window.contextClickY);
+                                table.draggable(true);
+                                table.selectable(true);
+                                tables.push(table);
+                                $("#table").hide();
+                                return true;
+                            });
                             $("#table").show();
                         },
                         items: {
@@ -311,8 +350,8 @@
                     
                     $(".dbdg").on("contextmenu", function(e) {
                         e.preventDefault();
-                        $("#xposition").val(e.pageX);
-                        $("#yposition").val(e.pageY);
+                        window.contextClickX = e.pageX;
+                        window.contextClickY = e.pageY;
                     });
                     
                     
@@ -398,7 +437,13 @@
                     $("#edit_table").click(function() {
                         let tableName = $(this).parent().parent().parent().attr('data-name');
                         $("#table").attr('data-name', tableName);
-                        $("#tableEditor").tableEditor();
+                        let table = diagram.tables.find(function(table) {
+                            return table.name == tableName;
+                        });
+                        $("#tableEditor").tableEditor(table);
+                        $("#tableEditor").onTableUpdate(function(tbl) {
+
+                        });
                         $("#table").show();
                     });
 
@@ -541,26 +586,84 @@
                         $("#relation_settings_container").relationSettings(table);
                         $("#relation_settings_container").onRelationRemove(function(index) {
                             //window.api.relations.splice(index, 1);
-                            console.log(diagram);
+                            console.log("rel", window.api.relations[index]);
+                            let rel = window.api.relations[index];
                             window.store.relations.forEach(function(relation) {
-                                console.log(relation);
-                                relation.render().detach(diagram);
+                                console.log("relation", relation);
+                                let column = relation.foriegnField.column;
+                                if(rel.type.toLowerCase() == 'manytomany') {
+                                    if(column.reference == null
+                                    && column.foreignKey == null
+                                    && rel.primaryKey == ''
+                                    && rel.foreignKey == ''
+                                    && (
+                                            (relation.options.foreignTable.tableOptions.name == rel.original
+                                            && relation.options.primaryTable.tableOptions.name == rel.foreign
+                                            )
+                                            ||
+                                            (relation.options.foreignTable.tableOptions.name == rel.foreign
+                                            && relation.options.foreignTable.tableOptions.name == rel.original
+                                            )
+                                        )
+                                    && relation.options.type == rel.type.toLowerCase()) {
+                                        relation.render().detach(diagram);
+                                    }
+                                } else {
+                                    if(column.reference == rel.foreign
+                                    && column.foreignKey == rel.primaryKey
+                                    && column.name == rel.foreignKey
+                                    && relation.options.foreignTable.tableOptions.name == rel.original
+                                    && relation.options.type == rel.type.toLowerCase()) {
+                                        relation.render().detach(diagram);
+                                    }
+                                }
                             })
                            // relation.render().detach(diagram);
                         });
                         $("#relation_settings").show();
                     });
-                    
-                    /*tables[1].onPointerUp = function(pointer) {
-                        console.log(pointer);
-                        alert('hello');
-                    };*/
-                    
-                    /*tables[1].on("click", function (ev) {
-                        ev.preventDefault();
-                        alert('hi');
-                        return false;
-                    })*/
+
+                    $("#table_rules").click(function() {
+                        let tableName = $(this).parent().parent().parent().attr('data-name');
+                        $("#rule_settings").attr('data-name', tableName);
+                        let table = diagram.tables.find(function(table) {
+                            return table.name == tableName;
+                        });
+
+                        $("#rule_settings_container").tableRules(table);
+                        $("#rule_settings_container").onRuleRemove(function(index) {
+                            console.log("index", index);
+                        });
+                        $("#rule_settings_container").onRuleSave(function(rule) {
+                            console.log("rule", rule);
+                        });
+                        $("#rule_settings").show();
+                    });
+
+                    $("#remove_table").click(function() {
+                        $("#table_remove").show();
+                    });
+
+                    $("#cancel_table_remove").click(function() {
+                        $("#table_remove").hide();
+                    });
+
+                    $("#confirm_table_remove").click(function() {
+                        let selectedTable = diagram.tables.find((table) => table.selected);
+                        if (selectedTable) {
+                            selectedTable.fieldsUi.forEach(function(f, index) {
+                                if (f.relation && f.relation.length > 0) {
+                                    f.relation.forEach(function (relation) {
+                                        relation.render().detach(diagram);
+                                    });
+                                }
+                            });
+                        }
+                        selectedTable.detach();
+                        $("#table_remove").hide();
+                        $(".dropdown").hide();
+                    });
+
                 });
             });
 

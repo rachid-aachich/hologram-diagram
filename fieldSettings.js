@@ -3,6 +3,7 @@
     $.fn.fieldSettings = function(table) {
 		let html = `<h4>Manage Fields</h4>
                     <div class="success" id="form_alert" style="padding-left: 58px;">Invalid field type</div>
+                    <div class="error" id="error_alert" style="padding-left: 58px;">Invalid field type</div>
                     <!-- Responsive table starts here -->
                     <!-- For correct display on small screens you must add 'data-title' to each 'td' in your table -->
                     <div class="table-responsive-vertical shadow-z-1">
@@ -20,21 +21,23 @@
                     </table>`
 		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
+        let hasRelation = $.fn.hasRelation(table);
         $.each(table.fieldsUi, function(index, field) {
             let fieldOptions = field.fieldOptions;
             let primary = fieldOptions.primary ? 'checked' : '';
             $("#field_list").append(`<tr>
                                         <td data-title="name">` + fieldOptions.name + `</td>
                                         <td data-title="primary">
-                                            <div class="checkbox" style="padding-left: 36px; padding-bottom: 26px;">
+                                            <div class="checkbox ` + (hasRelation ? 'disabled-checkbox' : '') + `" style="padding-left: 36px; padding-bottom: 26px;">
                                                 <label>
-                                                    <input class="primary_checkbox" type="checkbox" ` + primary + `  data-name="` + fieldOptions.name + `" data-index="` + index + `"/><i class="helper"></i>
+                                                    <input class="primary_checkbox" type="checkbox" ` + primary + `  data-name="` + fieldOptions.name + `" data-index="` + index + `" ` + (hasRelation ? 'disabled' : '') + `/>
+                                                    <i class="helper"></i>
                                                 </label>
                                             </div>
                                         </td>
                                         <td data-title="actions">
                                             <i class="material-icons menu-icon action-icon edit_field" id="" data-index="` + index + `">edit</i> 
-                                            ` + (table.fieldsUi.length > 1 ? `<i class="material-icons menu-icon action-icon delete_field" id="" data-index="` + index + `">delete</i>` : '') + `
+                                            ` + (table.fieldsUi.length > 1 ? `<i class="material-icons menu-icon action-icon delete_field" id="" data-index="` + index + `" data-name="` + fieldOptions.name + `">delete</i>` : '') + `
                                         </td>
                                     </tr>`
             );
@@ -51,15 +54,32 @@
         });
 
         $(".delete_field").click(function() {
-            let index = $(this).attr('data-index');
+            let fname = $(this).attr('data-name');
             let fieldOptions;
             $.each(table.fieldsUi, function(i, field) {
-                if(i == index)
+                if(field.fieldOptions.name == fname)
                     fieldOptions = field.fieldOptions;
             });
-            $.fn.removeCallback(fieldOptions);
-            $(this).closest('tr').remove();
-            $("#form_alert").text('Field removed successfully!').show();
+
+            if(fieldOptions.column.foreign) {
+                $("#form_alert").hide();
+                $("#error_alert").text('Cannot remove field with foreign constraints').show();
+                return false;
+            }
+            if(table.fieldsUi.length == 1) {
+                $("#form_alert").hide();
+                $("#error_alert").text('Cannot empty the table').show();
+                return false;
+            }
+            if(fieldOptions.hasOwnProperty('primary') && fieldOptions.primary) {
+                $("#form_alert").hide();
+                $("#error_alert").text('Cannot remove a primary key field').show();
+            } else {
+                $.fn.removeCallback(fieldOptions);
+                $(this).closest('tr').remove();
+                $("#error_alert").hide();
+                $("#form_alert").text('Field removed successfully!').show();
+            }
         });
 
         $(".primary_checkbox").change(function() {
@@ -70,6 +90,16 @@
 
         return this;
     };
+
+    $.fn.hasRelation = function(table) {
+        let hasRelation = false;
+        $.each(window.api.relations, function(index, relation) {
+            if(table.tableOptions.name == relation.original || table.tableOptions.name == relation.foreign)
+                hasRelation = true;
+        });
+
+        return hasRelation;
+    }
 	
 	$.fn.onFieldEdit = function(mycallback) {
 		$.fn.callback = mycallback

@@ -1,7 +1,7 @@
 (function ( $ ) {
  	
     $.fn.relationSettings = function(table) {
-		let html = `<h4>Manage Relations</h4>
+		let html = `<h4>Manage Relations (` + table.name + `)</h4>
                     <div class="success" id="form_alert" style="padding-left: 58px;">Invalid field type</div>
                     <!-- Responsive table starts here -->
                     <!-- For correct display on small screens you must add 'data-title' to each 'td' in your table -->
@@ -21,11 +21,9 @@
                     </table>`
 		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
-        console.log("relations", window.api.relations);
-        console.log("table", table);
         $.each(window.api.relations, function(index, relation) {
             if(relation.original != table.name && relation.foreign != table.name)
-                return false;
+                return true;
             
             let original = relation.original +  '.' + (relation.type == 'ManyToMany' ? 'id' : relation.foreignKey);
             let foreign = relation.foreign +  '.' + (relation.type == 'ManyToMany' ? 'id' : relation.primaryKey);

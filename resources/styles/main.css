@@ -1383,3 +1383,7 @@ body {
 .action-icon {
   cursor: pointer;
 }
+
+.disabled-checkbox::before {
+  background: grey !important;
+}
