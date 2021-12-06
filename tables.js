@@ -1,16 +1,15 @@
 (function ( $ ) {
  	
-    $.fn.tableEditor = function() {
+    $.fn.tableEditor = function(table = false) {
         let html = `<form>
-                        <input type="hidden" id="xposition" />
-                        <input type="hidden" id="yposition" />
-                        <h4>Create New Table (Entity)</h4>
+                        <h4>` + (table ? ('Edit Entity "' + table.name + `"`) : 'Create New Entity') + `</h4>
+                        <div class="error" id="error_alert" style="padding-left: 58px;">An error has occured</div>
                         <div class="form-group">
-                            <input id="tableName" type="text" required="required"/>
+                            <input id="tableName" type="text" required="required" value="` + (table ? table.name : '') + `"/>
                             <label for="input" class="control-label">Table Name</label>
                         </div>
                         <div class="form-group">
-                            <textarea id="tableDesc" onfocus="this.placeholder = 'Table description that will be used in your API Documentation'" onblur="this.placeholder = ''"></textarea>
+                            <textarea id="tableDesc" onfocus="this.placeholder = 'Table description that will be used in your API Documentation'" onblur="this.placeholder = ''">` + (table && table.description ? table.description : '') + `</textarea>
                             <label for="textarea" class="control-label">Description</label><i class="bar"></i>
                         </div>
                         <i class="bar"></i>
@@ -21,7 +20,7 @@
                                 <div class="row">
                                     <div class="checkbox" style="grid-area: first;">
                                         <label>
-                                        <input type="checkbox" checked="checked"/><i class="helper"></i>GET
+                                        <input type="checkbox" ` + (table ? table.) + `/><i class="helper"></i>GET
                                         </label>
                                     </div>
                                     <div class="checkbox" style="grid-area: second;">
@@ -115,54 +114,16 @@
                             <div id="chips" class="chips-placeholder chips"></div>
 
                         </div>
-                        
-                        <div class="feature" style="padding-left: 15px; padding-right: 15px;">
-                            <div class="row">
-                                <div class="form-group grid-first" style="padding-right: 10px;">
-                                    <div class="input-field col s12">
-                                        <input id="leftValue" type="text"/>
-                                        <label>Left Value</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group grid-second">
-                                    <div class="input-field col s12">
-                                        <select id="operator">
-                                            <option value="==" selected>==</option>
-                                            <option value="!=">!=</option>
-                                            <option value="===">===</option>
-                                            <option value="!==">!==</option>
-                                            <option value="<"><</option>
-                                            <option value=">">></option>
-                                            <option value="<="><=</option>
-                                            <option value=">">></option>
-                                            <option value=">">></option>
-                                        </select>
-                                        <label>Operator</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group grid-third" style="padding-left: 10px; padding-right: 10px;">
-                                    <div class="input-field col s12">
-                                        <input id="rightValue" type="text"/>
-                                        <label>Right Value</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group grid-forth" style="margin-top: 57px;">
-                                    <button id="addRule" class="btn waves-effect waves-light" type="submit" name="action">Add
-                                        <i class="material-icons right">add_box</i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="rule_chips" class="chips-placeholder chips"></div>
-                        </div>
                     </form>
                     <div class="button-container">
-                        <button id="addTable" type="button" class="button"><span>Add Table</span></button>
+                        <button id="saveTable" type="button" class="button"><span>` + (table ? 'Save Changes' : 'Add Table') + `</span></button>
                     </div>`;
         this.html(html);
         $('select').formSelect();
+
+        if(table) {
+
+        }
 
         $("#requiresAuth").change(function() {
             if(this.checked) {
@@ -172,8 +133,7 @@
             }
         });
         
-        $('#chips').chips(
-            {
+        $('#chips').chips({
                 onChipAdd: function() { $("#chips").show(); },
                 onChipDelete: function() {
                     if($("#chips").children().length <= 1)
@@ -213,28 +173,43 @@
             $("#rule_chips").chips('addChip', {tag: leftValue + ' ' + operator + ' ' + rightValue, image: ''});
         });
         
-        $("#addTable").click(function(e) {
+        $("#saveTable").click(function(e) {
             e.preventDefault();
-            let xposition = $("#xposition").val();
-            let yposition = $("#yposition").val();
             let tableName = $("#tableName").val();
-            let tbOpt = {
-                "name": tableName,
-                "header": {"tableIcon": "lock", "color": "#010072"},
-                "allowDrag": false,
-                "fields": [
-                    {"name": "id", "type": "number", "primary": true},
-                    {"name": "name", "type": "string"},
-                    {"name": "email", "type": "string"}
-                ],
-                "size" : {"width": "250", "height": "153"}
-            };
-            const fields = tbOpt.fields;
-            delete tbOpt.fields;
-            const table = diagram.table(tbOpt);
-            fields.forEach((field) => { table.addField(field) });
-            table.x(xposition).y(yposition);
+            tableName = tableName.replaceAll(' ', '').toLowerCase();
+            var validCharacters = /^[A-Za-z0-9-_]*$/;
+            if (!validCharacters.test(tableName)) {
+                $("#error_alert").text("Invalid entity name");
+                $("#error_alert").show();
+                return false;
+            }
+            if(table) {
+
+            } else {
+                let tbOpt = {
+                    name: tableName,
+                    header: {tableIcon: "lock", color: "#010072"},
+                    allowDrag: false,
+                    fields: [
+                        {name: "id", type: "int", primary: true}
+                    ],
+                    size : {width: "250", height: "153"}
+                };
+                if(!$.fn.newTableCallback(tbOpt)) {
+                    $("#error_alert").text("Table name already exists");
+                    $("#error_alert").show();
+                    return false;
+                }
+            }
         });
     }
+
+    $.fn.onNewTable = function(mycallback) {
+		$.fn.newTableCallback = mycallback
+	}
+
+    $.fn.onTableUpdate = function(mycallback) {
+		$.fn.newTableCallback = mycallback
+	}
 
 }( jQuery ));
