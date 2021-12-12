@@ -118,6 +118,7 @@
                             table.addField(f);
                         });
                         table.rules = tbl.rules;
+                        table.data = tbl;
                         tables.push(table);
                     });
                     /*let data = [
@@ -437,12 +438,14 @@
                     $("#edit_table").click(function() {
                         let tableName = $(this).parent().parent().parent().attr('data-name');
                         $("#table").attr('data-name', tableName);
+                        console.log("diagram.tables", diagram.tables);
+                        console.log("tableName", tableName);
                         let table = diagram.tables.find(function(table) {
                             return table.name == tableName;
                         });
                         $("#tableEditor").tableEditor(table);
                         $("#tableEditor").onTableUpdate(function(tbl) {
-
+                            
                         });
                         $("#table").show();
                     });
