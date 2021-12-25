@@ -1840,6 +1840,9 @@ var Table = /** @class */ (function (_super) {
         get: function () {
             return this.tableOptions.name;
         },
+        set: function(newName) {
+            this.tableOptions.name = newName;
+        },
         enumerable: true,
         configurable: true
     });
@@ -2171,7 +2174,7 @@ var Table = /** @class */ (function (_super) {
 		this.tableOptions.name = newName;
 		this.attr = {"data-name": newName};
 		this.tableTitle.innerHTML = newName;
-		this.tableTitle = newName;
+		this.tableTitle.textContent = newName;
 		return this;
     };
 	

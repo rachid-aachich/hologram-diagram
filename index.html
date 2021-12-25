@@ -334,6 +334,7 @@
                                 const fields = tbOpt.fields;
                                 delete tbOpt.fields;
                                 const table = diagram.table(tbOpt);
+                                table.data = tbOpt.data;
                                 fields.forEach((field) => { table.addField(field) });
                                 table.x(window.contextClickX).y(window.contextClickY);
                                 table.draggable(true);
@@ -445,7 +446,9 @@
                         });
                         $("#tableEditor").tableEditor(table);
                         $("#tableEditor").onTableUpdate(function(tbl) {
-                            
+                            table.changeName(tbl.data.name);
+                            table.data = tbl.data;
+                            $("#table").hide();
                         });
                         $("#table").show();
                     });

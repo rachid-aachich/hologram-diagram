@@ -131,6 +131,7 @@
         $("#chips").find("input").prop( "disabled", true );
 
         if(table) {
+            console.log(table);
             if(!table.data.methods.includes('GET'))
                 $("#method_get").prop('checked', false);
             
@@ -227,13 +228,11 @@
                 traits.push('timestampable');
             if($("#trait_softdeletable").is(':checked'))
                 traits.push('softdeletable');
-            
-            let chips = $("#chips").chips('selectChip');
 
-            chips.get(0).M_Chips.chipsData.forEach(function(chip) {
+            $("#chips").get(0).M_Chips.chipsData.forEach(function(chip) {
                 requiresAuth.push({method: chip.method, authEntity: chip.auth});
             });
-
+            
             let pagination = $("#pagination").is(':checked');
             let data = {
                 name: tableName,
@@ -275,9 +274,9 @@
                 data.search = table.data.search;
                 data.rules = table.data.rules;
                 table.data = data;
-                $.fn.onTableUpdate(table);
+                $.fn.tableUpdateCallback(table);
             } else {
-                data.columns = { // should be an array though
+                let primaryColumn = { // should be an array though
                     name: "id",
                     type: "int",
                     size: "",
@@ -293,13 +292,33 @@
                     password: false,
                     unique: true
                 }
+                data.columns.push(primaryColumn);
+                let fields = [{name: "id", type: "int", primary: true}];
+                if(data.traits.includes('uuid')) {
+                    let uuidColumn = {
+                        name: "uuid",
+                        type: "varchar",
+                        size: 100,
+                        foreign: false,
+                        reference: null,
+                        foreignKey: null,
+                        autoIncrement: false,
+                        id: false,
+                        uuid: true,
+                        default: null,
+                        null: true,
+                        login: false,
+                        password: false,
+                        unique: true
+                    }
+                    data.columns.push(uuidColumn);
+                    fields.push({name: "uuid", type: "varchar", primary: false});
+                }
                 let tbOpt = {
                     name: tableName,
                     header: {tableIcon: "lock", color: "#010072"},
                     allowDrag: false,
-                    fields: [
-                        {name: "id", type: "int", primary: true}
-                    ],
+                    fields: fields,
                     size : {width: "250", height: "153"},
                     data: data
                 };
@@ -317,7 +336,7 @@
 	}
 
     $.fn.onTableUpdate = function(mycallback) {
-		$.fn.newTableCallback = mycallback
+		$.fn.tableUpdateCallback = mycallback
 	}
 
 }( jQuery ));
