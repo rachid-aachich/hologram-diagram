@@ -595,7 +595,6 @@
                             console.log("rel", window.api.relations[index]);
                             let rel = window.api.relations[index];
                             window.store.relations.forEach(function(relation) {
-                                console.log("relation", relation);
                                 let column = relation.foriegnField.column;
                                 if(rel.type.toLowerCase() == 'manytomany') {
                                     if(column.reference == null
