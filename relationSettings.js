@@ -6,8 +6,64 @@
                     <!-- Responsive table starts here -->
                     <!-- For correct display on small screens you must add 'data-title' to each 'td' in your table -->
                     <div class="table-responsive-vertical shadow-z-1">
+                    <button id="addRelation" class="btn waves-effect waves-light" name="action">Add Relation
+                        <i class="material-icons right">add_box</i>
+                    </button>
+                    <button id="cancelRelation" style="display: none;" class="btn waves-effect waves-light" name="action">Cancel
+                        <i class="material-icons right" style="width: 20px;">indeterminate_check_box_outlined</i>
+                    </button>
+                    <div id="add_relation" style="display: none; padding-left: 15px; padding-right: 15px;">
+                        <div class="form-group">
+                            <div class="input-field">
+                                <select id="type">
+                                    <option value="m2m">ManyToMany</option>
+                                    <option value="m2o">ManyToOne</option>
+                                    <option value="o2o" selected>OneToOne</option>
+                                </select>
+                                <label>Relation Type</label>
+                            </div>
+                        </div>
+                        <div id="relation_fields">
+                            <div class="form-group">
+                                <div class="input-field">
+                                    <select id="operator">
+                                        <option value="==" selected>==</option>
+                                        <option value="!=">!=</option>
+                                        <option value="===">===</option>
+                                        <option value="!==">!==</option>
+                                        <option value="<"><</option>
+                                        <option value=">">></option>
+                                        <option value="<="><=</option>
+                                        <option value=">=">>=</option>
+                                    </select>
+                                    <label>Operator</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-field">
+                                    <select id="operator">
+                                        <option value="==" selected>==</option>
+                                        <option value="!=">!=</option>
+                                        <option value="===">===</option>
+                                        <option value="!==">!==</option>
+                                        <option value="<"><</option>
+                                        <option value=">">></option>
+                                        <option value="<="><=</option>
+                                        <option value=">=">>=</option>
+                                    </select>
+                                    <label>Operator</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button id="saveRule" class="btn waves-effect waves-light" name="action">Save Relation
+                                <i class="material-icons right">save</i>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Table starts here -->
-                    <table id="table" class="table table-hover table-mc-light-blue">
+                    <table id="relation_table" class="table table-hover table-mc-light-blue">
                         <thead>
                             <tr>
                                 <th>Primay Key</th>
@@ -21,6 +77,7 @@
                     </table>`
 		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
+        $('select').formSelect();
         $.each(window.api.relations, function(index, relation) {
             if(relation.original != table.name && relation.foreign != table.name)
                 return true;
@@ -43,6 +100,24 @@
             $.fn.removeCallback(index);
             $(this).closest('tr').remove();
             $("#form_alert").text('Relation removed successfully!').show();
+        });
+
+        $("#addRelation").click(function() {
+            $(this).hide();
+            $("#cancelRelation").show();
+            $("#add_relation").show();
+            $("#relation_table").hide();
+        });
+
+        $("#cancelRelation").click(function() {
+            $(this).hide();
+            $("#addRelation").show();
+            $("#add_relation").hide();
+            $("#relation_table").show();
+        });
+
+        $("#type").change(function() {
+            
         });
 
         return this;
