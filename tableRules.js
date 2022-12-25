@@ -71,6 +71,7 @@
 		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
         $('select').formSelect();
+        console.log("rules", table.rules);
         $.each(table.rules, function(index, rule) {            
             $("#rule_list").append(`<tr>
                                         <td data-title="name">` + rule.method + `</td>

@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="popup" id="relation_settings" data-name="" style="overflow-y: auto;">
-            <div class="popup-container" id="relation_settings_container" style="height: 100%; margin: auto;">
+            <div class="popup-container" id="relation_settings_container" style="margin: auto;">
                 
             </div>
         </div>
@@ -589,12 +589,13 @@
                             return table.name == tableName;
                         });
 
-                        $("#relation_settings_container").relationSettings(table);
+                        $("#relation_settings_container").relationSettings(table, diagram.tables);
                         $("#relation_settings_container").onRelationRemove(function(index) {
                             //window.api.relations.splice(index, 1);
                             console.log("rel", window.api.relations[index]);
                             let rel = window.api.relations[index];
                             window.store.relations.forEach(function(relation) {
+                                console.log(relation);
                                 let column = relation.foriegnField.column;
                                 if(rel.type.toLowerCase() == 'manytomany') {
                                     if(column.reference == null
@@ -625,6 +626,36 @@
                             })
                            // relation.render().detach(diagram);
                         });
+                        $("#relation_settings_container").onRelationSave(function(relObj) {
+                            console.log(relObj);
+                            let originTable = tables.find(function(table) {
+                                return table.name == relObj.original;
+                            });
+                            let foreignTable = tables.find(function(table) {
+                                return table.name == relObj.foreign;
+                            });
+
+
+                            let primaryKey = foreignTable.fieldsUi.find(function(field) {
+                                return field.fieldOptions.name == relObj.primaryKey;
+                            });
+                            let foreignKey = originTable.fieldsUi.find(function(field) {
+                                return relObj.type == 'ManyToMany' ? field.fieldOptions.primary == true : (field.fieldOptions.name == relObj.foreignKey);
+                            });
+
+                            window.api.relations.push(relObj);
+                            
+                            let r = new DBDiagram.Relation(diagram, {
+                                primaryTable: foreignTable,
+                                foreignField: foreignKey.fieldOptions,
+                                foreignTable: originTable,
+                                foreignFieldExists: true,
+                                type: relObj.type.toLowerCase(),
+                                line: true,
+                                weak: relObj.type == 'ManyToMany'
+                            });
+                            r.render().attach(diagram);
+                        });
                         $("#relation_settings").show();
                     });
 
@@ -640,7 +671,7 @@
                             console.log("index", index);
                         });
                         $("#rule_settings_container").onRuleSave(function(rule) {
-                            console.log("rule", rule);
+                            table.rules.push(rule);
                         });
                         $("#rule_settings").show();
                     });

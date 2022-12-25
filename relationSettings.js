@@ -1,6 +1,5 @@
 (function ( $ ) {
- 	
-    $.fn.relationSettings = function(table) {
+    $.fn.relationSettings = function(table, tables) {
 		let html = `<h4>Manage Relations (` + table.name + `)</h4>
                     <div class="success" id="form_alert" style="padding-left: 58px;">Invalid field type</div>
                     <!-- Responsive table starts here -->
@@ -24,39 +23,30 @@
                             </div>
                         </div>
                         <div id="relation_fields">
-                            <div class="form-group">
+                            <div class="form-group relation-field o2o m2o">
                                 <div class="input-field">
-                                    <select id="operator">
-                                        <option value="==" selected>==</option>
-                                        <option value="!=">!=</option>
-                                        <option value="===">===</option>
-                                        <option value="!==">!==</option>
-                                        <option value="<"><</option>
-                                        <option value=">">></option>
-                                        <option value="<="><=</option>
-                                        <option value=">=">>=</option>
+                                    <select id="primary">
                                     </select>
-                                    <label>Operator</label>
+                                    <label>Foreign Key</label>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group relation-field m2m m2o o2o">
                                 <div class="input-field">
-                                    <select id="operator">
-                                        <option value="==" selected>==</option>
-                                        <option value="!=">!=</option>
-                                        <option value="===">===</option>
-                                        <option value="!==">!==</option>
-                                        <option value="<"><</option>
-                                        <option value=">">></option>
-                                        <option value="<="><=</option>
-                                        <option value=">=">>=</option>
+                                    <select id="reference_table">
                                     </select>
-                                    <label>Operator</label>
+                                    <label>Reference Table</label>
+                                </div>
+                            </div>
+                            <div class="form-group relation-field m2o o2o">
+                                <div class="input-field">
+                                    <select id="reference_column">
+                                    </select>
+                                    <label>Reference Column</label>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <button id="saveRule" class="btn waves-effect waves-light" name="action">Save Relation
+                            <button id="saveRelation" class="btn waves-effect waves-light" name="action">Save Relation
                                 <i class="material-icons right">save</i>
                             </button>
                         </div>
@@ -66,7 +56,7 @@
                     <table id="relation_table" class="table table-hover table-mc-light-blue">
                         <thead>
                             <tr>
-                                <th>Primay Key</th>
+                                <th>Primary Key</th>
                                 <th>Foreign Key</th>
                                 <th>Relation</th>
                                 <th>Delete</th>
@@ -77,7 +67,7 @@
                     </table>`
 		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
-        $('select').formSelect();
+        console.log(window.api.relations);
         $.each(window.api.relations, function(index, relation) {
             if(relation.original != table.name && relation.foreign != table.name)
                 return true;
@@ -95,11 +85,67 @@
             );
         });
 
+        $.each(table.data.columns, function(index, column) {
+            console.log(column);
+            if(!column.id && !column.password && !column.foreign && !column.file) {
+                $("#primary").append('<option value="' + column.name + '">' + column.name + '</option>');
+            }
+        });
+
+        $.each(tables, function(index, tbl) {
+            if(tbl.data.name != table.data.name)
+                $("#reference_table").append('<option value="' + tbl.data.name + '">' + tbl.data.name + '</option>');
+        });
+
+        function populateRefColumn() {
+            selectedTable = $("#reference_table").val();
+            let columns = tables.find(t => t.data.name === selectedTable).data.columns;
+            $("#reference_column").html('');
+            $.each(columns, function(index, column) {
+                if(column.id || column.uuid) {
+                    $("#reference_column").append('<option value="' + column.name + '">' + column.name + '</option>');
+                }
+            });
+            $('#reference_column').formSelect();
+        }
+
+        populateRefColumn();
+
+        $("#reference_table").change(function(obj) {
+            populateRefColumn();
+        });
+
+        $("#type").change(function(obj) {
+            $(".relation-field").hide();
+            let type = $("#type").val();
+            if(type == 'm2m') {
+                $(".m2m").show();
+            } else if(type == 'm2o') {
+                $(".m2o").show();
+            } else if(type == 'o2o') {
+                $(".o2o").show();
+            }
+        });
+
+        $('select').formSelect();
+
         $(".delete_relation").click(function() {
             let index = $(this).attr('data-index');
             $.fn.removeCallback(index);
             $(this).closest('tr').remove();
             $("#form_alert").text('Relation removed successfully!').show();
+        });
+
+        $("#saveRelation").click(function(e) {
+            e.preventDefault();
+            let relObj = {
+                foreign: $("#reference_table").val(),
+                foreignKey: $("#primary").val(),
+                original: table.name,
+                primaryKey: $("#reference_column").val(),
+                type: $("#type").children("option").filter(":selected").text()
+            }
+            $.fn.saveRelationCallback(relObj);
         });
 
         $("#addRelation").click(function() {
@@ -116,16 +162,16 @@
             $("#relation_table").show();
         });
 
-        $("#type").change(function() {
-            
-        });
-
         return this;
     };
 
     $.fn.onRelationRemove = function(mycallback) {
 		$.fn.removeCallback = mycallback
 	}
+
+    $.fn.onRelationSave = function(mycallback) {
+        $.fn.saveRelationCallback = mycallback;
+    }
 
 	$.fn.error = function(error, input_id = false) {
 		if(input_id)
