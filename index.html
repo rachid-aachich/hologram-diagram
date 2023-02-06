@@ -487,7 +487,7 @@
                                                         relationType = relation.options.type;
                                                         relationWeak = relation.options.weak;
                                                         relationLine = relation.options.line;
-                                                        relation.foriegnField = field;
+                                                        relation.foreignField = field;
                                                         relation.render().detach(diagram);
                                                     });
 
@@ -558,7 +558,7 @@
                                                 relationType = relation.options.type;
                                                 relationWeak = relation.options.weak;
                                                 relationLine = relation.options.line;
-                                                relation.foriegnField = f.fieldOptions;
+                                                relation.foreignField = f.fieldOptions;
                                                 relation.render().detach(diagram);
                                             });
 
@@ -593,10 +593,13 @@
                         $("#relation_settings_container").onRelationRemove(function(index) {
                             //window.api.relations.splice(index, 1);
                             console.log("rel", window.api.relations[index]);
-                            let rel = window.api.relations[index];
-                            window.store.relations.forEach(function(relation) {
+                            let rel = window.store.relations[index];
+                            window.store.relations.splice(index, 1);
+                            window.api.relations.splice(index, 1);
+                            rel.render().detach(diagram);
+                            /*window.store.relations.forEach(function(relation) {
                                 console.log(relation);
-                                let column = relation.foriegnField.column;
+                                let column = relation.foreignField.column;
                                 if(rel.type.toLowerCase() == 'manytomany') {
                                     if(column.reference == null
                                     && column.foreignKey == null
@@ -620,14 +623,17 @@
                                     && column.name == rel.foreignKey
                                     && relation.options.foreignTable.tableOptions.name == rel.original
                                     && relation.options.type == rel.type.toLowerCase()) {
+                                        alert('removing a relation')
                                         relation.render().detach(diagram);
                                     }
                                 }
-                            })
+
+                                window.store.relations.splice(index, 1);
+                                window.api.relations.splice(index, 1);
+                            })*/
                            // relation.render().detach(diagram);
                         });
                         $("#relation_settings_container").onRelationSave(function(relObj) {
-                            console.log(relObj);
                             let originTable = tables.find(function(table) {
                                 return table.name == relObj.original;
                             });
@@ -635,13 +641,18 @@
                                 return table.name == relObj.foreign;
                             });
 
-
                             let primaryKey = foreignTable.fieldsUi.find(function(field) {
                                 return field.fieldOptions.name == relObj.primaryKey;
                             });
+                            
                             let foreignKey = originTable.fieldsUi.find(function(field) {
                                 return relObj.type == 'ManyToMany' ? field.fieldOptions.primary == true : (field.fieldOptions.name == relObj.foreignKey);
                             });
+
+                            if(window.api.relations.find(relObj) == undefined) {
+                                alert('relation already exists');
+                                return false;
+                            }
 
                             window.api.relations.push(relObj);
                             
@@ -654,6 +665,8 @@
                                 line: true,
                                 weak: relObj.type == 'ManyToMany'
                             });
+                            window.store.relations.push(r);
+                            window.api.relations.push(r);
                             r.render().attach(diagram);
                         });
                         $("#relation_settings").show();

@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
          
-         module.exports = {"foriegnKeyIcon":"foriegnKeyIcon","many":"many","one":"one","primaryKeyIcon":"primaryKeyIcon","tableIcon":"tableIcon","uniqueKeyIcon":"uniqueKeyIcon","passwordIcon":"passwordIcon"}
+         module.exports = {"foreignKeyIcon":"foreignKeyIcon","many":"many","one":"one","primaryKeyIcon":"primaryKeyIcon","tableIcon":"tableIcon","uniqueKeyIcon":"uniqueKeyIcon","passwordIcon":"passwordIcon"}
       
 
 /***/ }),
@@ -1182,11 +1182,11 @@ var Relation = /** @class */ (function (_super) {
             }
         }
 
-        _this.foriegnField = options.foreignField;
+        _this.foreignField = options.foreignField;
         if(!options.foreignFieldExists)
             _this.options.foreignTable.addField(options.foreignField);
         _this.options.primaryTable.primaryRelation(_this);
-        _this.options.foreignTable.foriegnRelation(_this, _this.foriegnField);
+        _this.options.foreignTable.foreignRelation(_this, _this.foreignField);
         _this.path = base_1.Base.createElement("path");
         var clazz = styles.line;
         if (_this.options.weak) {
@@ -1248,7 +1248,7 @@ var Relation = /** @class */ (function (_super) {
         var manyMidX = (manySize.width / 2);
         if (r1 < l2 || r2 < l1) { // in between table
             var pL = this.options.primaryTable.primaryFieldCoordinate();
-            var fL = this.options.foreignTable.fieldCoordinate(this.options.foreignTable.fieldIndex(this.foriegnField));
+            var fL = this.options.foreignTable.fieldCoordinate(this.options.foreignTable.fieldIndex(this.foreignField));
             if (Math.abs(r1 - l2) < Math.abs(r2 - l1)) {
                 p1 = pL.right;
                 p2 = fL.left;
@@ -1288,7 +1288,7 @@ var Relation = /** @class */ (function (_super) {
             attributes_1.applyAttribute(this.path, { d: str });
         } else {
             var pL = this.options.primaryTable.primaryFieldCoordinate();
-            var fL = this.options.foreignTable.fieldCoordinate(this.options.foreignTable.fieldIndex(this.foriegnField));
+            var fL = this.options.foreignTable.fieldCoordinate(this.options.foreignTable.fieldIndex(this.foreignField));
             var right = false;
             if (Math.abs(l1 - l2) < Math.abs(r1 - r2)) {
                 p1 = pL.right;
@@ -1756,8 +1756,8 @@ var Table = /** @class */ (function (_super) {
                 clazz = styles.unique;
             }
             else if (options.foreign) {
-                fieldUi.icon = elements_1.Visualization.createReferencePathIcon(icons.foriegnKeyIcon);
-                size = visual.getIconsElementSize(icons.foriegnKeyIcon);
+                fieldUi.icon = elements_1.Visualization.createReferencePathIcon(icons.foreignKeyIcon);
+                size = visual.getIconsElementSize(icons.foreignKeyIcon);
                 clazz = styles.foreign;
             }
             else if(options.password) {
@@ -1918,10 +1918,10 @@ var Table = /** @class */ (function (_super) {
         return this;
     };
     /**
-     * Add foriegn relationship.
+     * Add foreign relationship.
      * @param relation relationship object.
      */
-    Table.prototype.foriegnRelation = function (relation, field) {
+    Table.prototype.foreignRelation = function (relation, field) {
         var e_2, _a;
         try {
             for (var _b = __values(this.fieldsUi), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -2945,7 +2945,7 @@ function defaultTableSetting(visualization) {
                 fontStyle: css.getPropertyValue(styles.dbdgFieldTextTypeFontStyle),
                 fontWeight: css.getPropertyValue(styles.dbdgFieldTextTypeFontWeight),
             },
-            foriegn: {
+            foreign: {
                 font: {
                     fontFamily: css.getPropertyValue(styles.dbdgFieldTextForeignFontFamily),
                     fontSize: css.getPropertyValue(styles.dbdgFieldTextForeignFontSize),
@@ -3406,7 +3406,7 @@ var Visualization = /** @class */ (function () {
         this.headerHeight = this.getTableHeaderSize().height;
         this.footerHeight = this.getTableFooterSize({ name: "", engine: "Unknown" }).height;
         this.fieldHeight = this.getTableFieldSize().height;
-        this.fieldIconWidth = this.iconsSize.get(icons_1.default.foriegnKeyIcon).editable()
+        this.fieldIconWidth = this.iconsSize.get(icons_1.default.foreignKeyIcon).editable()
             .extend(this.iconsSize.get(icons_1.default.uniqueKeyIcon), true)
             .extend(this.iconsSize.get(icons_1.default.primaryKeyIcon), true)
            // .extend(this.iconsSize.get(icons_1.default.passwordIcon), true)
@@ -3501,7 +3501,7 @@ var Visualization = /** @class */ (function () {
         size.extend(this.getIconsElementSize(icons_1.default.primaryKeyIcon), true);
         opts.primary = false;
         opts.foreign = true;
-        size.extend(this.getIconsElementSize(icons_1.default.foriegnKeyIcon), true);
+        size.extend(this.getIconsElementSize(icons_1.default.foreignKeyIcon), true);
         opts.primary = false;
         opts.foreign = false;
         opts.unique = true;

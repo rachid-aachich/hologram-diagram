@@ -67,7 +67,6 @@
                     </table>`
 		let dataTypes = {'Boolean': null,'Number': null,'Decimal': null,'Double': null,'String': null,'TEXT': null,'Datetime': null,'Timestamp': null,'JSON': null};
         this.html(html);
-        console.log(window.api.relations);
         $.each(window.api.relations, function(index, relation) {
             if(relation.original != table.name && relation.foreign != table.name)
                 return true;
@@ -86,8 +85,7 @@
         });
 
         $.each(table.data.columns, function(index, column) {
-            console.log(column);
-            if(!column.id && !column.password && !column.foreign && !column.file) {
+            if(!column.id && !column.password && !column.foreign && !column.file && !isRelated(column, table)) {
                 $("#primary").append('<option value="' + column.name + '">' + column.name + '</option>');
             }
         });
@@ -107,6 +105,18 @@
                 }
             });
             $('#reference_column').formSelect();
+        }
+
+        function isRelated(column, table) {
+            let related = false;
+            $.each(window.api.relations, function(index, relation) {
+                if(relation.original == table.name && relation.foreignKey == column.name) {
+                    related = true;
+                    return;
+                }
+            });
+
+            return related;
         }
 
         populateRefColumn();
