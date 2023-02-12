@@ -2,6 +2,7 @@
     $.fn.relationSettings = function(table, tables) {
 		let html = `<h4>Manage Relations (` + table.name + `)</h4>
                     <div class="success" id="form_alert" style="padding-left: 58px;">Invalid field type</div>
+                    <div class="error" id="form_error" style="padding-left: 58px;"></div>
                     <!-- Responsive table starts here -->
                     <!-- For correct display on small screens you must add 'data-title' to each 'td' in your table -->
                     <div class="table-responsive-vertical shadow-z-1">
@@ -148,6 +149,11 @@
 
         $("#saveRelation").click(function(e) {
             e.preventDefault();
+            if(!$("#reference_table").val() || !$("#primary").val() || !table.name || !$("#reference_column").val() || !$("#type").children("option").filter(":selected").text()) {
+                $("#form_error").html("Invalid form data!");
+                return false;
+            }
+
             let relObj = {
                 foreign: $("#reference_table").val(),
                 foreignKey: $("#primary").val(),

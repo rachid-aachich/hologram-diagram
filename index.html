@@ -649,8 +649,18 @@
                                 return relObj.type == 'ManyToMany' ? field.fieldOptions.primary == true : (field.fieldOptions.name == relObj.foreignKey);
                             });
 
-                            if(window.api.relations.find(relObj) == undefined) {
-                                alert('relation already exists');
+                            console.log(relObj);
+
+                            let exists = window.api.relations.some(obj => 
+                                obj.foreign === relObj.foreign &&
+                                obj.foreignKey === relObj.foreignKey &&
+                                obj.original === relObj.original &&
+                                obj.primaryKey === relObj.primaryKey &&
+                                obj.type === relObj.type
+                            );
+
+                            if(exists) {
+                                $("#relation_settings_container").error('relation already exists');
                                 return false;
                             }
 
